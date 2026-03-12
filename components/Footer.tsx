@@ -1,9 +1,10 @@
 "use client"
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Fish } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { AuthContext } from '@/context/AuthContext';
 
 interface BrandEntry {
     name: string;
@@ -14,7 +15,18 @@ export default function Footer() {
     const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Ksr+Aqua+World+Thirunalloor+Kerala+688541&query_place_id=ChIJ43QfzrJ7CDsRJIz2eKSKUEk";
     const router = useRouter();
     const [brands, setBrands] = useState<BrandEntry[]>([]);
-    const [currentSlide, setCurrentSlide] = useState(0);
+    const marqueeRef = useRef<HTMLDivElement>(null);
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
+    const { isLoggedIn } = useContext(AuthContext);
+
+    const handleProtectedLink = (e: React.MouseEvent, href: string) => {
+        e.preventDefault();
+        if (!isLoggedIn) {
+            router.push(`/login?redirect=${href.replace('/', '')}&message=login_required`);
+        } else {
+            router.push(href);
+        }
+    };
 
     useEffect(() => {
         // Fetch from dedicated /api/brands/ (admin-managed logos) + products (fallback images)
@@ -55,13 +67,44 @@ export default function Footer() {
         });
     }, []);
 
-    // Auto-advance slideshow
+    // Center detection logic
     useEffect(() => {
-        if (brands.length <= 1) return;
-        const interval = setInterval(() => {
-            setCurrentSlide(prev => (prev + 1) % brands.length);
-        }, 3000);
-        return () => clearInterval(interval);
+        if (brands.length === 0) return;
+
+        let rafId: number;
+        const checkCenter = () => {
+            if (!marqueeRef.current) return;
+            
+            const items = marqueeRef.current.querySelectorAll('.marquee-item');
+            const containerRect = marqueeRef.current.getBoundingClientRect();
+            const center = containerRect.left + containerRect.width / 2;
+
+            let closestIdx = -1;
+            let minDiff = Infinity;
+
+            items.forEach((item, idx) => {
+                const rect = item.getBoundingClientRect();
+                const itemCenter = rect.left + rect.width / 2;
+                const diff = Math.abs(center - itemCenter);
+
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIdx = idx;
+                }
+            });
+
+            // If it's within a reasonable distance of the center, make it active
+            if (minDiff < 100) {
+                setActiveIndex(closestIdx);
+            } else {
+                setActiveIndex(null);
+            }
+
+            rafId = requestAnimationFrame(checkCenter);
+        };
+
+        rafId = requestAnimationFrame(checkCenter);
+        return () => cancelAnimationFrame(rafId);
     }, [brands.length]);
 
     const handleBrandClick = (brandName: string) => {
@@ -69,80 +112,82 @@ export default function Footer() {
     };
 
     return (
-        <footer className="bg-slate-900 text-slate-300 pt-16 pb-8 px-4 border-t border-slate-800">
+        <footer className="bg-slate-900 text-slate-300 pt-16 pb-8 border-t border-slate-800">
 
-            {/* ===== BRAND SLIDESHOW ===== */}
+            {/* ===== BRAND MARQUEE ===== */}
             {brands.length > 0 && (
-                <div className="bg-slate-800 border-y border-slate-700 py-10 mb-16 shadow-inner">
-                    <div className="max-w-4xl mx-auto px-4 text-center">
-                        <p className="text-[10px] uppercase tracking-[0.3em] font-black text-slate-400 mb-8 flex items-center justify-center gap-3">
-                            <span className="w-10 h-[1px] bg-slate-700 hidden md:block"></span>
-                            Official Hardware Partners
-                            <span className="w-10 h-[1px] bg-slate-700 hidden md:block"></span>
+                <div className="w-full bg-slate-900/50 border-y border-slate-800/50 py-12 mb-16 overflow-hidden relative group/marquee">
+                    {/* Background Glow */}
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
+                    
+                    <div className="text-center mb-8">
+                        <p className="text-[10px] uppercase tracking-[0.4em] font-black text-slate-500 flex items-center justify-center gap-4">
+                            <span className="w-12 h-[1px] bg-gradient-to-r from-transparent to-slate-700"></span>
+                            Industry Leading Partners
+                            <span className="w-12 h-[1px] bg-gradient-to-l from-transparent to-slate-700"></span>
                         </p>
+                    </div>
 
-                        {/* Slide Container */}
-                        <div className="relative h-48 md:h-56 overflow-hidden">
-                            {brands.map((brand, i) => (
-                                <button
-                                    suppressHydrationWarning
-                                    key={i}
-                                    onClick={() => handleBrandClick(brand.name)}
-                                    className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-700 cursor-pointer group
-                    ${i === currentSlide ? 'opacity-100 translate-y-0 z-10' : 'opacity-0 translate-y-4 z-0'}`}
-                                >
-                                    {brand.image ? (
-                                        <div className="relative mb-6">
-                                            {/* Logo Container - Rectangular and Centered */}
-                                            <div className="w-48 h-24 md:w-64 md:h-32 rounded-2xl overflow-hidden border border-white/5 bg-white/5 flex items-center justify-center p-6 group-hover:border-blue-500/50 group-hover:bg-white/10 transition-all shadow-2xl">
-                                                <img
-                                                    src={brand.image}
-                                                    alt={brand.name}
-                                                    className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                                                />
+                    <div className="relative flex items-center h-40 md:h-48 overflow-hidden group" ref={marqueeRef}>
+                        <div className="flex animate-marquee-custom whitespace-nowrap gap-12 md:gap-24 px-12 md:px-24 items-center">
+                            {/* Duplicate brands for infinite loop */}
+                            {[...brands, ...brands].map((brand, i) => {
+                                const isActive = activeIndex === i;
+                                return (
+                                    <button
+                                        key={`${brand.name}-${i}`}
+                                        onClick={() => handleBrandClick(brand.name)}
+                                        className={`marquee-item flex flex-col items-center gap-4 cursor-pointer transition-all duration-700 select-none outline-none group/item
+                                            ${isActive ? 'scale-125 z-20' : 'scale-90 z-10'}`}
+                                    >
+                                        <div className="relative">
+                                            {/* Logo Container */}
+                                            <div className={`w-32 h-16 md:w-48 md:h-24 flex items-center justify-center p-4 transition-all duration-700 
+                                                ${isActive ? 'grayscale-0' : 'grayscale group-hover/item:grayscale-0 group-focus/item:grayscale-0'}`}>
+                                                {brand.image ? (
+                                                    <img
+                                                        src={brand.image}
+                                                        alt={brand.name}
+                                                        className={`max-w-full max-h-full object-contain filter drop-shadow-lg transition-transform duration-700
+                                                            ${isActive ? 'scale-110' : 'group-hover/item:scale-110'}`}
+                                                    />
+                                                ) : (
+                                                    <span className={`text-xl md:text-3xl font-black transition-colors uppercase tracking-widest
+                                                        ${isActive ? 'text-blue-400' : 'text-slate-400 group-hover/item:text-blue-400'}`}>
+                                                        {brand.name}
+                                                    </span>
+                                                )}
                                             </div>
-                                            {/* Subtle Glow Effect */}
-                                            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_40px_rgba(59,130,246,0.2)]" />
+                                            
+                                            {/* Center Highlighting & Hover Glow */}
+                                            <div className={`absolute inset-0 -z-10 rounded-full blur-3xl transition-all duration-700 scale-150
+                                                ${isActive ? 'bg-blue-500/20' : 'bg-blue-500/0 group-hover/item:bg-blue-500/10'}`}></div>
                                         </div>
-                                    ) : (
-                                        <div className="mb-6 px-12 py-8 bg-white/5 border border-white/10 group-hover:border-blue-500/60 rounded-2xl transition-all shadow-xl">
-                                            <span className="text-3xl md:text-5xl font-black text-white tracking-widest uppercase group-hover:text-blue-400 transition-colors">
+
+                                        {/* Brand Label */}
+                                        <div className={`flex flex-col items-center transition-all duration-500
+                                            ${isActive ? 'opacity-100' : 'opacity-40 group-hover/item:opacity-100'}`}>
+                                            <span className={`text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transition-colors
+                                                ${isActive ? 'text-white' : 'group-hover/item:text-white'}`}>
                                                 {brand.name}
                                             </span>
+                                            <div className={`h-1 bg-blue-500 mt-1 rounded-full transition-all duration-500
+                                                ${isActive ? 'w-full' : 'w-0 group-hover/item:w-full'}`}></div>
                                         </div>
-                                    )}
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-sm md:text-lg font-black text-white uppercase tracking-[0.2em] group-hover:text-blue-400 transition-colors">
-                                            {brand.name}
-                                        </span>
-                                        <div className="w-8 h-[2px] bg-blue-600 mt-2 scale-x-0 group-hover:scale-x-100 transition-transform origin-center"></div>
-                                        <span className="text-[10px] font-bold text-slate-500 mt-2 group-hover:text-blue-300 transition-colors uppercase tracking-[0.1em] opacity-60 group-hover:opacity-100">
-                                            Tap to explore Gear →
-                                        </span>
-                                    </div>
-                                </button>
-                            ))}
+                                    </button>
+                                );
+                            })}
                         </div>
-
-                        {/* Navigation Dots */}
-                        {brands.length > 1 && (
-                            <div className="flex justify-center gap-2 mt-4 relative z-20">
-                                {brands.map((_, i) => (
-                                    <button
-                                        suppressHydrationWarning
-                                        key={i}
-                                        onClick={() => setCurrentSlide(i)}
-                                        className={`h-2 rounded-full transition-all duration-300 ${i === currentSlide ? 'bg-blue-500 w-8' : 'bg-slate-600 hover:bg-slate-400 w-2'}`}
-                                    />
-                                ))}
-                            </div>
-                        )}
                     </div>
+
+                    {/* Left/Right Fade Gradients for "Idle Space" transition */}
+                    <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10"></div>
+                    <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10"></div>
                 </div>
             )}
 
             {/* ===== FOOTER COLUMNS ===== */}
-            <div className="max-w-[1500px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="max-w-[1500px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 px-4 md:px-8">
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-white">
                         <Fish className="text-blue-500" size={32} />
@@ -157,8 +202,8 @@ export default function Footer() {
                     <h4 className="text-white font-bold mb-6 uppercase tracking-widest text-xs">Navigation</h4>
                     <ul className="space-y-4 text-sm font-medium">
                         <li><Link href="/" className="hover:text-blue-400 transition">Shop Home</Link></li>
-                        <li><Link href="/my-orders" className="hover:text-blue-400 transition">Order History</Link></li>
-                        <li><Link href="/profile" className="hover:text-blue-400 transition">My Account</Link></li>
+                        <li><a href="/my-orders" onClick={(e) => handleProtectedLink(e, '/my-orders')} className="hover:text-blue-400 transition">Order History</a></li>
+                        <li><a href="/profile" onClick={(e) => handleProtectedLink(e, '/profile')} className="hover:text-blue-400 transition">My Account</a></li>
                         <li><Link href="/contact" className="hover:text-blue-400 transition">Support</Link></li>
                     </ul>
                 </div>
@@ -184,7 +229,7 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className="max-w-[1500px] mx-auto pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="max-w-[1500px] mx-auto pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 px-4 md:px-8">
                 <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500">© 2026 KSR Store. All Rights Reserved.</p>
                 <p className="text-[10px] uppercase tracking-widest font-bold text-slate-600">
                     Engineered by <a href="https://www.linkedin.com/in/alan-roy-a87887315/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-500 transition-colors underline decoration-slate-700">Alan Roy</a>

@@ -2,45 +2,67 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
+import axios from 'axios';
+
 interface AuthContextType {
     isLoggedIn: boolean;
+    user: any | null;
     login: (access: string, refresh: string) => void;
     logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
     isLoggedIn: false,
+    user: null,
     login: () => { },
     logout: () => { },
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState<any | null>(null);
     const router = useRouter();
+
+    const fetchUser = async (token: string) => {
+        try {
+            const res = await axios.get('https://alnroy.pythonanywhere.com/api/auth/me/', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUser(res.data);
+        } catch (err) {
+            console.error("Failed to fetch user", err);
+            logout();
+        }
+    };
 
     // Check token on initial app load
     useEffect(() => {
         const token = localStorage.getItem('access_token');
-        if (token) setIsLoggedIn(true);
+        if (token) {
+            setIsLoggedIn(true);
+            fetchUser(token);
+        }
     }, []);
 
     // Function to run when user logs in
     const login = (access: string, refresh: string) => {
         localStorage.setItem('access_token', access);
         localStorage.setItem('refresh_token', refresh);
-        setIsLoggedIn(true); // This instantly updates the Navbar
+        setIsLoggedIn(true);
+        fetchUser(access);
     };
 
     // Function to run when user logs out
     const logout = () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        setIsLoggedIn(false); // This instantly updates the Navbar
+        setIsLoggedIn(false);
+        setUser(null);
         router.push('/');
     };
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

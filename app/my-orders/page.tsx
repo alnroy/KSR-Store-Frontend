@@ -19,6 +19,12 @@ export default function MyOrdersPage() {
 
     // --- Fetch Orders on Load ---
     useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            router.push('/login?redirect=my-orders&message=login_required');
+            return;
+        }
+
         const fetchOrders = async () => {
             try {
                 // API instance handles the 'Bearer' token automatically
@@ -28,7 +34,7 @@ export default function MyOrdersPage() {
             } catch (err: any) {
                 console.error("Order Fetch Error:", err);
                 if (err.response?.status === 401) {
-                    router.push('/login');
+                    router.push('/login?redirect=my-orders&message=login_required');
                 }
             } finally {
                 setLoading(false);
@@ -51,10 +57,11 @@ export default function MyOrdersPage() {
     };
 
     // --- Helper: Image URL Formatter ---
-    const getValidImageUrl = (url: string) => {
-        if (!url) return '';
+    const getValidImageUrl = (url: string | null | undefined): string | null => {
+        if (!url) return null;
         // Handles absolute URLs and PythonAnywhere relative paths
-        return url.startsWith('http') ? url : `https://alnroy.pythonanywhere.com${url}`;
+        const cleanUrl = url.startsWith('http') ? url : `https://alnroy.pythonanywhere.com${url}`;
+        return cleanUrl;
     };
 
     // --- Handle Address PATCH Update ---
@@ -104,7 +111,9 @@ export default function MyOrdersPage() {
                                 <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative flex items-center justify-center shadow-sm">
                                     {order.items && order.items.length > 0 && order.items[0].product_image ? (
                                         <>
-                                            <img src={getValidImageUrl(order.items[0].product_image)} alt="Gear" className="w-full h-full object-cover" />
+                                            {getValidImageUrl(order.items[0].product_image) && (
+                                                <img src={getValidImageUrl(order.items[0].product_image) || undefined} alt="Gear" className="w-full h-full object-cover" />
+                                            )}
                                             {order.items.length > 1 && (
                                                 <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center text-white font-black text-sm">
                                                     +{order.items.length - 1}
@@ -165,11 +174,33 @@ export default function MyOrdersPage() {
                                     </button>
                                 )}
                                 
+                                {order.status === 'SHIPPED' && (
+                                    <button 
+                                        onClick={async () => {
+                                            try {
+                                                await API.patch(`orders/${order.id}/`, { status: 'DELIVERED' });
+                                                setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'DELIVERED' } : o));
+                                                alert("Happy Catching! Order marked as Received.");
+                                            } catch (err) {
+                                                alert("Failed to update status.");
+                                            }
+                                        }}
+                                        className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-green-500/20"
+                                    >
+                                        Mark as Received
+                                    </button>
+                                )}
+
                                 {order.status === 'FAILED' && order.rejection_reason && (
                                     <p className="text-xs font-bold text-red-500 max-w-xs text-right bg-red-50 p-2 rounded border border-red-100">
                                         Admin Note: {order.rejection_reason}
                                     </p>
                                 )}
+
+                                <div className="text-[10px] font-bold text-slate-400 text-right space-y-0.5">
+                                    <p>{order.mobile_number && `📞 ${order.mobile_number}`}</p>
+                                    <p>{order.city}, {order.state} - {order.pincode}</p>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -209,20 +240,27 @@ export default function MyOrdersPage() {
                         </div>
                         
                         <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            {selectedProductsInfo.map((item: any, idx: number) => (
-                                <div key={idx} className="flex gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 group hover:border-blue-200 transition-colors">
-                                    <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-slate-200">
-                                        <img src={getValidImageUrl(item.product_image)} className="w-full h-full object-cover" alt={item.product_name} />
-                                    </div>
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        <p className="font-black text-slate-900 text-lg leading-tight mb-1">{item.product_name}</p>
-                                        <div className="flex justify-between items-center mt-1">
-                                            <p className="text-sm font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-100">Qty: {item.quantity}</p>
-                                            <p className="font-black text-blue-600">₹{item.price}</p>
+                            {selectedProductsInfo.map((item: any, idx: number) => {
+                                const imgUrl = getValidImageUrl(item.product_image);
+                                return (
+                                    <div key={idx} className="flex gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 group hover:border-blue-200 transition-colors">
+                                        <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-slate-200 bg-white">
+                                            {imgUrl ? (
+                                                <img src={imgUrl || undefined} className="w-full h-full object-cover" alt={item.product_name} />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-2xl bg-slate-100">📦</div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-center">
+                                            <p className="font-black text-slate-900 text-lg leading-tight mb-1">{item.product_name}</p>
+                                            <div className="flex justify-between items-center mt-1">
+                                                <p className="text-sm font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-100">Qty: {item.quantity}</p>
+                                                <p className="font-black text-blue-600">₹{item.price}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         
                         <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">

@@ -34,15 +34,22 @@ export const CartProvider = ({ children }) => {
     };
 
     const clearCart = () => setCart([]);
-
-    // CRITICAL FIX: Dynamically use offer_price if it exists, otherwise use regular price
-    const totalPrice = cart.reduce((acc, item) => {
+ 
+    const updateQuantity = (productId, newQuantity) => {
+        if (newQuantity < 1) return;
+        setCart(prev => prev.map(item => item.id === productId ? { ...item, quantity: newQuantity } : item));
+    };
+ 
+    // Calculate total price dynamically
+    const cartTotal = cart.reduce((acc, item) => {
         const activePrice = item.offer_price ? parseFloat(item.offer_price) : parseFloat(item.price);
         return acc + (activePrice * item.quantity);
     }, 0);
 
+    const totalPrice = cartTotal; // Alias for backward compatibility
+
     return (
-        <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, totalPrice }}>
+        <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, updateQuantity, cartTotal, totalPrice }}>
             {children}
         </CartContext.Provider>
     );

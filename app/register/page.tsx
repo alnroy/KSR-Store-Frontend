@@ -101,6 +101,7 @@ export default function RegisterPage() {
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Username</label>
                             <input 
+                                suppressHydrationWarning
                                 type="text" 
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
@@ -111,6 +112,7 @@ export default function RegisterPage() {
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Email</label>
                             <input 
+                                suppressHydrationWarning
                                 type="email" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -121,6 +123,7 @@ export default function RegisterPage() {
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
                             <input 
+                                suppressHydrationWarning
                                 type="password" 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -131,6 +134,7 @@ export default function RegisterPage() {
                         </div>
 
                         <button 
+                            suppressHydrationWarning
                             type="submit" 
                             disabled={loading}
                             className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition disabled:bg-slate-300 mt-4"
@@ -146,6 +150,7 @@ export default function RegisterPage() {
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Enter 6-Digit OTP</label>
                             <input 
+                                suppressHydrationWarning
                                 type="text" 
                                 maxLength={6}
                                 value={otp}
@@ -157,6 +162,7 @@ export default function RegisterPage() {
                         </div>
 
                         <button 
+                            suppressHydrationWarning
                             type="submit" 
                             disabled={loading || otp.length !== 6}
                             className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition disabled:bg-slate-300 mt-4"

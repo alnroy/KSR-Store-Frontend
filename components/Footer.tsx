@@ -191,7 +191,7 @@ export default function Footer() {
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-white">
                         <Fish className="text-blue-500" size={32} />
-                        <span className="text-2xl font-black tracking-tighter uppercase">KSR Store</span>
+                        <span className="text-2xl font-black tracking-tighter uppercase">KSR Bait & Tackle</span>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-400">
                         Premium tackle and gear for the modern angler. Owned and managed by <span className="text-white font-bold">Sajeevan</span>.
@@ -214,7 +214,7 @@ export default function Footer() {
                         <div className="flex gap-4">
                             <MapPin className="text-blue-500 shrink-0" size={20} />
                             <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-sm leading-relaxed hover:text-white transition">
-                                Ksr Aqua World,<br />Thirunalloor, Kerala 688541
+                                KSR Bait & Tackle,<br />Thirunalloor, Kerala 688541
                             </a>
                         </div>
                         <div className="space-y-3">
@@ -230,7 +230,7 @@ export default function Footer() {
             </div>
 
             <div className="max-w-[1500px] mx-auto pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 px-4 md:px-8">
-                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500">© 2026 KSR Store. All Rights Reserved.</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500">© 2026 KSR Bait & Tackle. All Rights Reserved.</p>
                 <p className="text-[10px] uppercase tracking-widest font-bold text-slate-600">
                     Engineered by <a href="https://www.linkedin.com/in/alan-roy-a87887315/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-500 transition-colors underline decoration-slate-700">Alan Roy</a>
                 </p>

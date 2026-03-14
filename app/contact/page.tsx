@@ -7,7 +7,7 @@ export default function ContactPage() {
     return (
         <div className="max-w-6xl mx-auto py-20 px-4">
             <div className="text-center mb-16">
-                <h1 className="text-5xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">Contact KSR Store</h1>
+                <h1 className="text-5xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">Contact KSR Bait & Tackle</h1>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">Get in touch with Us for product inquiries or order support.</p>
             </div>
 
@@ -44,7 +44,7 @@ export default function ContactPage() {
                     </div>
                     <h3 className="font-black text-xl text-slate-900 mb-3">Visit Store</h3>
                     <p className="text-slate-500 text-sm mb-4">Thirunalloor, Kerala 688541</p>
-                    <p className="font-black text-slate-900 mb-2">KSR Aqua World</p>
+                    <p className="font-black text-slate-900 mb-2">KSR Bait & Tackle</p>
                     <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest">Get Directions →</span>
                 </a>
             </div>

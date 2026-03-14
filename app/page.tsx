@@ -167,6 +167,16 @@ function HomeContent() {
     }, {});
   };
 
+  const getActivePrice = (product: any, options: Record<string, string>) => {
+    let price = parseFloat(product.offer_price || product.price);
+    if (!product.variants) return price;
+    Object.entries(options).forEach(([attr, val]) => {
+      const v = product.variants.find((variant: any) => variant.attribute_name === attr && variant.value === val);
+      if (v) price += parseFloat(v.price_modifier || 0);
+    });
+    return price;
+  };
+
   const handleAddToCartWithCheck = (e: React.MouseEvent, product: any) => {
     e.stopPropagation();
     e.preventDefault();
@@ -185,7 +195,13 @@ function HomeContent() {
       return;
     }
 
-    const cartProduct = { ...product, selectedOptions };
+    const finalPrice = getActivePrice(product, selectedOptions);
+    const cartProduct = { 
+      ...product, 
+      selectedOptions,
+      price: product.offer_price ? product.price : finalPrice, // Keep original if offer exists, or set modified
+      offer_price: product.offer_price ? finalPrice : null // Set modified as offer if offer exists
+    };
     addToCart(cartProduct);
     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Added to Cart!', background: '#1e293b', color: '#fff', timer: 2000, showConfirmButton: false });
   };
@@ -548,8 +564,8 @@ function HomeContent() {
                   
                   <div className="flex items-center gap-6 mb-10 pb-10 border-b border-slate-100">
                     <div className="flex flex-col">
-                      <p className="text-3xl md:text-5xl font-black text-slate-900">₹{selectedProduct.offer_price || selectedProduct.price}</p>
-                      {selectedProduct.offer_price && <p className="text-lg text-slate-400 line-through">M.R.P: ₹{selectedProduct.price}</p>}
+                      <p className="text-3xl md:text-5xl font-black text-slate-900">₹{selectedProduct ? getActivePrice(selectedProduct, selectedOptions).toLocaleString() : '0'}</p>
+                      {selectedProduct.offer_price && <p className="text-lg text-slate-400 line-through">Base: ₹{selectedProduct.price}</p>}
                     </div>
                     <div className="h-12 w-px bg-slate-100"></div>
                     <div className="flex flex-col gap-1">
@@ -621,7 +637,12 @@ function HomeContent() {
                             return Swal.fire({ icon: 'info', title: 'Pick an option', text: 'Select size/color before checkout' });
                           }
 
-                          localStorage.setItem('instant_buy_item', JSON.stringify([{ ...selectedProduct, selectedOptions, quantity: 1 }]));
+                          localStorage.setItem('instant_buy_item', JSON.stringify([{ 
+                            ...selectedProduct, 
+                            selectedOptions, 
+                            quantity: 1,
+                            price: getActivePrice(selectedProduct, selectedOptions) // Pass the modified price
+                          }]));
 
                           if (!isLoggedIn) {
                             setSelectedProduct(null);

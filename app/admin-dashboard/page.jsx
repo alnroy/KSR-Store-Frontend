@@ -306,6 +306,48 @@ const AdminDashboard = () => {
         } catch (err) { Swal.fire({ icon: 'error', title: 'Failed to add category' }); }
     };
 
+    // --- ATTRIBUTE FORM ---
+    const [isAttributeModalOpen, setIsAttributeModalOpen] = useState(false);
+    const [attrName, setAttrName] = useState('');
+
+    const handleSaveAttribute = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('access_token');
+        try {
+            await axios.post('https://alnroy.pythonanywhere.com/api/attributes/', { name: attrName }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsAttributeModalOpen(false);
+            setAttrName('');
+            fetchProductsAndCategories();
+            Swal.fire({ icon: 'success', title: 'Attribute Added' });
+        } catch (err) { Swal.fire({ icon: 'error', title: 'Failed to add attribute' }); }
+    };
+
+    const handleDeleteAttribute = async (attr) => {
+        const result = await Swal.fire({
+            title: `Delete "${attr.name}"?`,
+            text: 'Warning: This may affect existing product variants!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Delete',
+            cancelButtonText: 'Cancel',
+        });
+        if (!result.isConfirmed) return;
+        const token = localStorage.getItem('access_token');
+        try {
+            await axios.delete(`https://alnroy.pythonanywhere.com/api/attributes/${attr.id}/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchProductsAndCategories();
+            Swal.fire({ icon: 'success', title: 'Attribute Deleted', timer: 1500, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Delete Failed', text: err.response?.data?.detail || 'Could not delete attribute.' });
+        }
+    };
+
     // --- VIDEO STATE & CRUD ---
     const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
     const [vTitle, setVTitle] = useState('');
@@ -377,8 +419,8 @@ const AdminDashboard = () => {
 
             {/* Tabs */}
             <div className="max-w-6xl mx-auto px-4 mt-8">
-                <div className="grid grid-cols-2 lg:grid-cols-6 md:grid-cols-3 bg-white rounded-2xl shadow-sm p-1 border border-slate-200 overflow-hidden relative">
-                    {['orders', 'products', 'categories', 'brands', 'videos', 'analytics'].map((tab) => (
+                <div className="grid grid-cols-2 lg:grid-cols-7 md:grid-cols-4 bg-white rounded-2xl shadow-sm p-1 border border-slate-200 overflow-hidden relative">
+                    {['orders', 'products', 'categories', 'brands', 'attributes', 'videos', 'analytics'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -504,6 +546,26 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
+                {activeTab === 'attributes' && (
+                    <div className="bg-white p-4 md:p-8 rounded-[2rem] shadow-sm border border-slate-100">
+                        <div className="flex justify-between items-center mb-10">
+                            <h2 className="text-2xl font-black text-slate-900">Product Attributes</h2>
+                            <button onClick={() => setIsAttributeModalOpen(true)} className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs md:text-sm shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">+ Add Attribute</button>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                            {availableAttributes.map(attr => (
+                                <div key={attr.id} className="bg-slate-50 border border-slate-100 p-6 rounded-[1.5rem] flex flex-col items-center shadow-sm">
+                                    <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4 font-black">
+                                        {attr.name[0]}
+                                    </div>
+                                    <p className="font-black text-slate-900 uppercase tracking-widest text-[10px] md:text-xs mb-3">{attr.name}</p>
+                                    <button onClick={() => handleDeleteAttribute(attr)} className="bg-red-50 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500 text-red-500 py-2 px-4 rounded-xl font-black text-[8px] uppercase transition-all">🗑️ Delete</button>
+                                </div>
+                            ))}
+                        </div>
+                        {availableAttributes.length === 0 && <p className="text-slate-400 font-bold text-center py-10">No attributes found. Create "Size" or "Length" to start using variants.</p>}
+                    </div>
+                )}
                 {activeTab === 'analytics' && (
                     <div className="space-y-8">
                         {/* Summary Cards */}
@@ -716,6 +778,18 @@ const AdminDashboard = () => {
                 </div>
             )}
 
+            {isAttributeModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[101] flex items-center justify-center p-4">
+                    <form onSubmit={handleSaveAttribute} className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl relative">
+                        <button type="button" onClick={() => setIsAttributeModalOpen(false)} className="absolute top-6 right-6 text-slate-400 hover:text-red-500">✕</button>
+                        <h2 className="text-2xl font-black text-slate-900 mb-6 italic">Define <span className="text-blue-600 not-italic">Attribute</span></h2>
+                        <p className="text-[10px] text-slate-400 font-bold mb-6 uppercase tracking-widest">Create categories like "Size", "Rod Length", or "Material".</p>
+                        <input required type="text" value={attrName} onChange={e => setAttrName(e.target.value)} placeholder="e.g. Length" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold mb-6" />
+                        <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl">Create Metric</button>
+                    </form>
+                </div>
+            )}
+
             {isVideoModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
                     <form onSubmit={handleSaveVideo} className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative">
@@ -762,33 +836,68 @@ const AdminDashboard = () => {
                                 </select>
                             </div>
                         </div>
+
+                        <div className="flex items-center gap-4 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                                <div className="relative">
+                                    <input type="checkbox" checked={pIsHeroMarquee} onChange={e => setPIsHeroMarquee(e.target.checked)} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </div>
+                                <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Show in Hero Marquee</span>
+                            </label>
+                        </div>
                         <div className="grid grid-cols-3 gap-4 mb-4">
                             <input suppressHydrationWarning type="number" required value={pPrice} onChange={e => setPPrice(e.target.value)} placeholder="Price" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl font-black" />
                             <input suppressHydrationWarning type="number" value={pOfferPrice} onChange={e => setPOfferPrice(e.target.value)} placeholder="Offer" className="p-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600" />
                             <input suppressHydrationWarning type="number" required value={pStock} onChange={e => setPStock(e.target.value)} placeholder="Stock" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl font-black" />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                            <select required value={pCategory} onChange={e => setPCategory(e.target.value)} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl font-black outline-none font-bold">
+                        <div className="mb-6">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Category</label>
+                            <select required value={pCategory} onChange={e => setPCategory(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-black outline-none font-bold">
                                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
-                            <input type="file" onChange={e => setPImage(e.target.files[0])} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold" />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                            <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Primary Image</label>
+                                <input type="file" onChange={e => setPImage(e.target.files[0])} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold" />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Gallery Images ({pImages.length} selected)</label>
+                                <input type="file" multiple onChange={e => setPImages(Array.from(e.target.files))} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold" />
+                            </div>
                         </div>
                         <textarea required value={pDesc} onChange={e => setPDesc(e.target.value)} placeholder="Description" rows="3" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-xs mb-8"></textarea>
 
                         <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 mb-8">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xs font-black text-blue-900 uppercase tracking-widest italic">Variants</h3>
-                                <button type="button" onClick={addVariantRow} className="text-blue-600 font-black text-[10px] uppercase">+ Add</button>
+                                <h3 className="text-xs font-black text-blue-900 uppercase tracking-widest italic">Inventory Variants</h3>
+                                <button type="button" onClick={addVariantRow} className="bg-blue-600 text-white font-black text-[9px] px-3 py-1 rounded-full uppercase tracking-widest hover:bg-blue-700 transition-all">+ Add Row</button>
                             </div>
-                            {pVariants.map((v, index) => (
-                                <div key={index} className="flex gap-2 mb-2 items-center">
-                                    <select required className="flex-1 p-3 text-xs bg-white rounded-lg outline-none font-bold" value={v.attribute} onChange={e => updateVariantRow(index, 'attribute', e.target.value)}>
-                                        {availableAttributes.map(attr => <option key={attr.id} value={attr.id}>{attr.name}</option>)}
-                                    </select>
-                                    <input required placeholder="Value" value={v.value} onChange={e => updateVariantRow(index, 'value', e.target.value)} className="flex-1 p-3 text-xs bg-white rounded-lg outline-none font-bold border border-blue-100" />
-                                    <button type="button" onClick={() => removeVariantRow(index)} className="text-red-400 font-black uppercase text-[10px]">✕</button>
-                                </div>
-                            ))}
+                            <div className="space-y-3">
+                                {pVariants.map((v, index) => (
+                                    <div key={index} className="flex flex-col sm:flex-row gap-2 p-3 bg-white/50 rounded-2xl border border-blue-50 relative group">
+                                        <select required className="flex-1 p-3 text-[10px] md:text-xs bg-white rounded-xl outline-none font-bold border border-blue-50" value={v.attribute} onChange={e => updateVariantRow(index, 'attribute', e.target.value)}>
+                                            <option value="">Attribute...</option>
+                                            {availableAttributes.map(attr => <option key={attr.id} value={attr.id}>{attr.name}</option>)}
+                                        </select>
+                                        <input required placeholder="Value (6ft)" value={v.value} onChange={e => updateVariantRow(index, 'value', e.target.value)} className="flex-1 p-3 text-[10px] md:text-xs bg-white rounded-xl outline-none font-bold border border-blue-50" />
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <label className="text-[7px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-1 block">Modifier (₹)</label>
+                                                <input type="number" placeholder="+/-" value={v.price_modifier} onChange={e => updateVariantRow(index, 'price_modifier', e.target.value)} className="w-20 p-2 text-[10px] bg-blue-50 rounded-lg outline-none font-black text-blue-600 border border-blue-100" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Stock</label>
+                                                <input type="number" placeholder="Qty" value={v.stock} onChange={e => updateVariantRow(index, 'stock', e.target.value)} className="w-16 p-2 text-[10px] bg-slate-50 rounded-lg outline-none font-black text-slate-900 border border-slate-100" />
+                                            </div>
+                                        </div>
+                                        <button type="button" onClick={() => removeVariantRow(index)} className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-[10px] font-black hidden group-hover:flex shadow-sm">✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                            {pVariants.length === 0 && <p className="text-[9px] text-blue-400/60 font-bold text-center py-4">No variants defined. Add rows for different sizes or weights.</p>}
                         </div>
                         <div className="flex gap-4">
                             <button type="submit" className="flex-1 bg-slate-900 text-white py-5 rounded-3xl font-black uppercase tracking-widest shadow-xl">Save Gear</button>

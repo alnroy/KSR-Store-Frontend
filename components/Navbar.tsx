@@ -64,7 +64,7 @@ export default function Navbar() {
 
             {/* LOGO */}
             <Link href="/" className="text-xl md:text-2xl font-black tracking-tighter text-blue-400 shrink-0 italic">
-              KSR <span className="text-white not-italic">AQUA</span>
+              KSR &nbsp;<span className="text-white not-italic">BAIT & TACKLE</span>
             </Link>
           </div>
 
@@ -121,7 +121,7 @@ export default function Navbar() {
             </button>
 
             {/* DESKTOP NAV LINKS */}
-            <div className="hidden md:flex items-center gap-6 ml-4">
+            <div className="hidden md:flex items-center gap-6 ml-4 min-w-[200px] justify-end">
               {mounted && (
                 <>
                   {isLoggedIn ? (
@@ -132,25 +132,25 @@ export default function Navbar() {
                         </Link>
                       )}
                       <Link href="/my-orders" className="text-xs font-black uppercase tracking-widest hover:text-blue-400 transition-colors">Orders</Link>
-                      <button suppressHydrationWarning onClick={logout} className="text-red-400 text-xs font-black uppercase tracking-widest hover:text-red-300">Logout</button>
+                      <button onClick={logout} className="text-red-400 text-xs font-black uppercase tracking-widest hover:text-red-300">Logout</button>
                     </>
                   ) : (
                     <Link href="/login" className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl text-xs font-black uppercase transition-all shadow-lg shadow-blue-900/20">Login</Link>
                   )}
+                  <button 
+                    onClick={(e) => {
+                      if (!isLoggedIn) {
+                        router.push('/login?redirect=profile&message=login_required');
+                      } else {
+                        router.push('/profile');
+                      }
+                    }}
+                    className="text-2xl hover:opacity-70 transition-opacity"
+                  >
+                    👤
+                  </button>
                 </>
               )}
-              <button 
-                onClick={(e) => {
-                  if (!isLoggedIn) {
-                    router.push('/login?redirect=profile&message=login_required');
-                  } else {
-                    router.push('/profile');
-                  }
-                }}
-                className="text-2xl hover:opacity-70 transition-opacity"
-              >
-                👤
-              </button>
             </div>
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function Navbar() {
       <SidebarMenu isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       {/* --- 4. OFFICIAL WHATSAPP FLOATING BUTTON --- */}
       <a
-        href="https://wa.me/917511136171?text=Hi%20KSR%20Aqua,%20I'm%20interested%20in%20some%20fishing%20gear!"
+        href="https://wa.me/917511136171?text=Hi%20KSR%20Bait%20%26%20Tackle,%20I'm%20interested%20in%20some%20fishing%20gear!"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-8 right-8 z-[100] bg-[#25D366] text-white w-16 h-16 rounded-full shadow-[0_10px_40px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 transition-all active:scale-95 group"

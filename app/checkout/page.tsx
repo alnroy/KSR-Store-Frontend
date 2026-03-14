@@ -3,8 +3,9 @@ import { useContext, useState, useEffect } from 'react';
 import { CartContext } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api';
-import { MapPin, Phone, User, Home, Building2, Landmark, Globe, CheckCircle2, Navigation, Mail, ArrowLeft } from 'lucide-react';
+import { MapPin, Phone, User, Home, Building2, Landmark, Globe, CheckCircle2, Navigation, Mail, ArrowLeft, Truck, ShieldAlert, MessageCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
     const { cart: globalCart, totalPrice: globalTotalPrice, clearCart } = useContext(CartContext);
@@ -65,7 +66,7 @@ export default function CheckoutPage() {
     const [loading, setLoading] = useState(false);
 
     const upiId = "alanroyff101@oksbi";
-    const upiUrl = `upi://pay?pa=${upiId}&pn=KSR%20Aqua&am=${totalPrice}&cu=INR`;
+    const upiUrl = `upi://pay?pa=${upiId}&pn=KSR%20Bait%20%26%20Tackle&am=${totalPrice}&cu=INR`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
 
     useEffect(() => {
@@ -196,10 +197,6 @@ export default function CheckoutPage() {
                        </button>
                        <h1 className="text-3xl md:text-5xl font-black text-slate-900 italic tracking-tight leading-none">Final Check <span className="text-blue-600 not-italic">Post</span></h1>
                     </div>
-                    <div className="bg-red-50 border-l-4 border-red-600 p-4 rounded-r-2xl w-full max-w-md shadow-sm shrink-0">
-                        <p className="text-red-800 font-bold text-[10px] md:text-xs leading-relaxed uppercase tracking-widest mb-1 items-center flex gap-2">⚠️ No-Refund Policy</p>
-                        <p className="text-red-700/80 font-bold text-[9px] md:text-[10px]">All sales are final once verified. Catch carefully.</p>
-                    </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="grid lg:grid-cols-12 gap-6 md:gap-10 w-full min-w-0">
@@ -305,6 +302,35 @@ export default function CheckoutPage() {
                              <label htmlFor="default-chk" className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest cursor-pointer leading-tight">Default tackle box destination</label>
                         </div>
                     </div>
+
+                    {/* Updated Policy Section */}
+                    <div className="grid md:grid-cols-2 gap-6 mt-4">
+                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+                            <div className="flex items-center gap-3 text-blue-600">
+                                <Truck size={24} />
+                                <h3 className="font-black uppercase tracking-widest text-xs">Delivery Intelligence</h3>
+                            </div>
+                            <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
+                                Deliveries are fast (1-3 days) for locations near our store. For long-distance orders or other districts, it may take up to <span className="text-slate-900">10 days</span>. 
+                            </p>
+                            <p className="text-[10px] text-slate-400 bg-slate-50 p-3 rounded-xl border border-slate-100 italic">
+                                Note: "Shipped" status updates are triggered only after 10 days of booking for long-distance shipments.
+                            </p>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+                            <div className="flex items-center gap-3 text-red-600">
+                                <ShieldAlert size={24} />
+                                <h3 className="font-black uppercase tracking-widest text-xs">Purchase & Replacement</h3>
+                            </div>
+                            <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
+                                <span className="text-red-600">Strictly no refunds.</span> Replacements are only possible if the buyer visits the store with an unboxing video showing defects.
+                            </p>
+                            <p className="text-[10px] text-slate-400 bg-red-50/30 p-3 rounded-xl border border-red-100">
+                                Since we use courier services like DTDC, remote returns/replacements are not standard. If you wish to bear all courier expenses, please <Link href="/contact" className="text-blue-600 underline">Contact Our Store</Link> to discuss options.
+                            </p>
+                        </div>
+                    </div>
                 </div>
                                 {/* Right: Payment & Summary (4 cols) - Sticky on Desktop */}
                 <div className="lg:col-span-4 space-y-8">
@@ -326,11 +352,19 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <div className="flex flex-col items-center gap-4 bg-white/5 p-4 md:p-6 rounded-[2rem] border border-white/10">
-                                    <img src={qrCodeUrl} alt="UPI QR" className="w-24 h-24 md:w-32 md:h-32 rounded-xl border-4 border-white/10" />
-                                    <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">{upiId}</p>
-                                </div>
+                             <div className="space-y-6">
+                                <a 
+                                    href={upiUrl}
+                                    className="flex flex-col items-center gap-4 bg-white/5 p-4 md:p-6 rounded-[2rem] border border-white/10 hover:bg-white/10 transition-all group"
+                                >
+                                    <img src={qrCodeUrl} alt="UPI QR" className="w-24 h-24 md:w-32 md:h-32 rounded-xl border-4 border-white/10 group-hover:scale-105 transition-transform" />
+                                    <div className="text-center">
+                                        <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1 flex items-center justify-center gap-2">
+                                            Tap to pay with UPI App <Navigation size={10} className="rotate-90" />
+                                        </p>
+                                        <p className="text-xs font-black text-white">{upiId}</p>
+                                    </div>
+                                </a>
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
@@ -360,10 +394,32 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 text-center hidden lg:block">
-                            <CheckCircle2 size={32} className="text-blue-600 mx-auto mb-4" />
-                            <h3 className="font-black text-slate-900 uppercase text-[10px] tracking-widest mb-1">Secure Portal</h3>
-                            <p className="text-[9px] text-slate-400 font-bold">Encrypted via KSR Secure V2.0</p>
+                        <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 space-y-6">
+                            <div className="text-center">
+                                <CheckCircle2 size={32} className="text-blue-600 mx-auto mb-4" />
+                                <h3 className="font-black text-slate-900 uppercase text-[10px] tracking-widest mb-1">Secure Portal</h3>
+                                <p className="text-[9px] text-slate-400 font-bold">Encrypted via KSR Secure Systems</p>
+                            </div>
+                                       <div className="pt-6 border-t border-slate-50 space-y-4">
+                                <div className="flex gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                                    <p className="text-[9px] text-slate-500 font-bold leading-relaxed">
+                                        Deliveries within 3 days for nearby locations; up to 10 days for remote areas.
+                                    </p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
+                                    <p className="text-[9px] text-slate-500 font-bold leading-relaxed">
+                                        Local store-visit replacements only with video proof. No refunds.
+                                    </p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0" />
+                                    <p className="text-[9px] text-slate-500 font-bold leading-relaxed">
+                                        Courier returns at buyer's expense. <Link href="/contact" className="text-blue-600 underline">Contact Us</Link> for info.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

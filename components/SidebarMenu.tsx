@@ -147,7 +147,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
                                 </>
                             ) : (
                                 <Link href="/login" onClick={onClose} className="flex items-center gap-3 p-4 rounded-xl bg-blue-600 text-white font-black text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
-                                    <User size={18} /> Login to KSR Aqua
+                                    <User size={18} /> Login to KSR Bait & Tackle
                                 </Link>
                             )
                         ) : (
@@ -164,7 +164,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
                                 {[
                                     { label: 'Pocket Friendly', min: 0, max: 500 },
                                     { label: 'Standard Gear', min: 500, max: 5000 },
-                                    { label: 'Pro Equipment', min: 5000, max: 10000 }
+                                    { label: 'Pro Equipment', min: 5000, max: 999999 }
                                 ].map((b) => (
                                     <div key={b.label} className="space-y-2">
                                         <button 

@@ -133,8 +133,22 @@ export default function CheckoutPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // 1. Basic Cart/Screenshot Check
         if (cart.length === 0) return alert("Your payload is empty!");
         if (!screenshot) return alert("Please upload your payment screenshot.");
+
+        // 2. Validation: Mobile Number (10-15 digits)
+        const mobileRegex = /^\+?1?\d{9,15}$/;
+        if (!mobileRegex.test(formData.mobile_number)) {
+            return Swal.fire('Invalid Input', 'Please enter a valid mobile number (10-15 digits).', 'warning');
+        }
+
+        // 3. Validation: Pincode (6 digits)
+        const pincodeRegex = /^\d{6}$/;
+        if (!pincodeRegex.test(formData.pincode)) {
+            return Swal.fire('Invalid Input', 'Please enter a valid 6-digit pincode.', 'warning');
+        }
 
         setLoading(true);
 

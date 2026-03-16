@@ -208,7 +208,11 @@ function HomeContent() {
 
   const submitReview = async () => {
     if (!isLoggedIn) return Swal.fire({ icon: 'warning', title: 'Login Required', text: 'You must be logged in to leave a review.' });
-    if (!comment.trim()) return;
+    
+    // Validation
+    if (rating < 1 || rating > 5) return Swal.fire({ icon: 'warning', title: 'Invalid Rating', text: 'Please select a star rating.' });
+    if (!comment.trim()) return Swal.fire({ icon: 'warning', title: 'Empty Comment', text: 'Please write a comment.' });
+    if (comment.length > 500) return Swal.fire({ icon: 'warning', title: 'Comment Too Long', text: 'Comments must be under 500 characters.' });
 
     setIsSubmittingReview(true);
     try {

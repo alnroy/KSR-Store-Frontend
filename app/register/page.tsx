@@ -16,13 +16,42 @@ export default function RegisterPage() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [otp, setOtp] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     // --- STEP 1: Request Registration ---
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setPasswordError('');
+
+        // 1. Username validation
+        const usernameRegex = /^[\w.@+-]+$/;
+        if (!usernameRegex.test(username)) {
+            setError("Username can only contain letters, numbers, and @/./+/-/_ characters.");
+            setLoading(false);
+            return;
+        }
+
+        // 2. Password Strength Validation
+        if (password !== confirmPassword) {
+            setPasswordError("Passwords do not match.");
+            setLoading(false);
+            return;
+        }
+
+        const hasNumber = /\d/.test(password);
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const isLongEnough = password.length >= 8;
+
+        if (!isLongEnough || !hasNumber || !hasUpper || !hasLower) {
+            setPasswordError("Password must be 8+ characters and contain uppercase, lowercase, and a digit.");
+            setLoading(false);
+            return;
+        }
 
         try {
             await axios.post('https://alnroy.pythonanywhere.com/api/auth/register/', {
@@ -32,12 +61,11 @@ export default function RegisterPage() {
             });
 
             // Transition to OTP step
-            setSuccessMessage('Registration initiated! Please check your terminal/email for the 6-digit OTP.');
+            setSuccessMessage('Registration initiated! Please check your email for the 6-digit OTP.');
             setStep(2);
         } catch (err: any) {
             console.error(err);
-            // Extract the specific error message from Django if available
-            const backendError = err.response?.data?.email?.[0] || err.response?.data?.username?.[0] || 'Registration failed. Please check your details.';
+            const backendError = err.response?.data?.email?.[0] || err.response?.data?.username?.[0] || err.response?.data?.password?.[0] || 'Registration failed. Please check your details.';
             setError(backendError);
         } finally {
             setLoading(false);
@@ -129,9 +157,25 @@ export default function RegisterPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
                                 required
-                                minLength={8}
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Confirm Password</label>
+                            <input 
+                                suppressHydrationWarning
+                                type="password" 
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                                required
+                            />
+                        </div>
+
+                        {passwordError && (
+                            <div className="bg-amber-50 text-amber-700 p-3 rounded-lg text-xs font-bold border border-amber-100">
+                                {passwordError}
+                            </div>
+                        )}
 
                         <button 
                             suppressHydrationWarning

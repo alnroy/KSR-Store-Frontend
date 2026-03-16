@@ -168,7 +168,8 @@ export default function CheckoutPage() {
             const formattedItems = cart.map((item: any) => ({
                 product: item.id,
                 quantity: item.quantity || 1,
-                price: item.offer_price ? parseFloat(item.offer_price) : parseFloat(item.price)
+                price: item.offer_price ? parseFloat(item.offer_price) : parseFloat(item.price),
+                selected_options: item.selectedOptions || {}
             }));
             data.append('items', JSON.stringify(formattedItems));
 

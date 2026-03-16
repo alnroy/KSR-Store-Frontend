@@ -78,7 +78,7 @@ export default function Navbar() {
               placeholder="Search for Rods, Reels, or Lures..."
               className="w-full px-5 bg-white text-slate-900 rounded-l-2xl outline-none font-bold placeholder:text-slate-400 text-sm shadow-inner"
             />
-            <button type="submit" suppressHydrationWarning className="bg-blue-600 hover:bg-blue-500 px-8 rounded-r-2xl font-black transition-all">🔍</button>
+            <button type="submit" suppressHydrationWarning className="bg-blue-600 hover:bg-blue-500 px-8 rounded-r-2xl font-black transition-all"> &nbsp; &nbsp; &nbsp; &nbsp; 🔍</button>
           </form>
 
           {/* RIGHT SIDE ICONS */}

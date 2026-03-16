@@ -54,7 +54,7 @@ export default function Navbar() {
 
       {/* --- 2. MAIN NAVBAR --- */}
       <header className="sticky top-0 z-50 bg-slate-900 text-white shadow-2xl">
-        <div className="max-w-[1500px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-[1500px] mx-auto px-4 py-3 flex items-center justify-between gap-2 md:gap-4">
           
           <div className="flex items-center gap-2">
             {/* HAMBURGER MENU (Now on Left) */}
@@ -63,7 +63,7 @@ export default function Navbar() {
             </button>
 
             {/* LOGO */}
-            <Link href="/" className="text-xl md:text-2xl font-black tracking-tighter text-blue-400 shrink-0 italic">
+            <Link href="/" className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter text-blue-400 shrink-0 italic">
               KSR &nbsp;<span className="text-white not-italic">BAIT & TACKLE</span>
             </Link>
           </div>
@@ -78,17 +78,17 @@ export default function Navbar() {
               placeholder="Search for Rods, Reels, or Lures..."
               className="w-full px-5 bg-white text-slate-900 rounded-l-2xl outline-none font-bold placeholder:text-slate-400 text-sm shadow-inner"
             />
-            <button type="submit" suppressHydrationWarning className="bg-blue-600 hover:bg-blue-500 px-8 rounded-r-2xl font-black transition-all"> &nbsp; &nbsp; &nbsp; &nbsp; 🔍</button>
+            <button type="submit" suppressHydrationWarning className="bg-blue-600 hover:bg-blue-500 px-8 rounded-r-2xl font-black transition-all">🔍</button>
           </form>
 
           {/* RIGHT SIDE ICONS */}
-          <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-8">
             <Link href="/" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors hidden md:block">Home</Link>
             {/* MOBILE SEARCH ICON */}
             <button 
               suppressHydrationWarning 
               onClick={() => setIsSearchOpen(!isSearchOpen)} 
-              className="md:hidden p-2 text-slate-300 hover:text-white transition-colors"
+              className="md:hidden p-2 text-slate-300 hover:text-white transition-colors ml-2"
             >
               <Search size={22} />
             </button>

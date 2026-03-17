@@ -141,6 +141,9 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
                                     <Link href="/my-orders" onClick={onClose} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all">
                                         <Package size={18} /> My Orders
                                     </Link>
+                                    <Link href="/profile" onClick={onClose} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all">
+                                        <User size={18} /> My Account
+                                    </Link>
                                     <button onClick={() => { logout(); onClose(); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 text-red-500 font-bold text-sm transition-all">
                                         <LogOut size={18} /> Sign Out
                                     </button>

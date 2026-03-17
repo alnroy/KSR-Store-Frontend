@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import API from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, LogOut, Package, MapPin, Trash2, Key, ShieldCheck, Mail, Phone, Home, Building2, Globe } from 'lucide-react';
+import { User, LogOut, Package, MapPin, Trash2, Key, ShieldCheck, Mail, Phone, Home, Building2, Globe, Plus, Briefcase } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function ProfilePage() {
@@ -11,6 +11,68 @@ export default function ProfilePage() {
     const [addresses, setAddresses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+
+    const handleAddAddress = async () => {
+        const { value: formValues } = await Swal.fire({
+            title: 'New Dispatch Dock',
+            html:
+                '<div class="space-y-4 text-left p-2">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">Address Label (e.g. Home, Office)</label>' +
+                '<input id="swal-label" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Home / Office / Dock 1">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">Receiver Name</label>' +
+                '<input id="swal-name" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Full Name">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">Mobile Number</label>' +
+                '<input id="swal-phone" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="10-digit number">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">House / Building Info</label>' +
+                '<input id="swal-house" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="House No / Bldg">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">Street / Area</label>' +
+                '<input id="swal-street" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Street / Area">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">City</label>' +
+                '<input id="swal-city" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Town / City">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">Pincode</label>' +
+                '<input id="swal-pincode" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="6-digit Pincode">' +
+                '</div>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Secure Dock ⚓',
+            confirmButtonColor: '#2563eb',
+            preConfirm: () => {
+                const label = (document.getElementById('swal-label') as HTMLInputElement).value;
+                const name = (document.getElementById('swal-name') as HTMLInputElement).value;
+                const phone = (document.getElementById('swal-phone') as HTMLInputElement).value;
+                const house = (document.getElementById('swal-house') as HTMLInputElement).value;
+                const street = (document.getElementById('swal-street') as HTMLInputElement).value;
+                const city = (document.getElementById('swal-city') as HTMLInputElement).value;
+                const pincode = (document.getElementById('swal-pincode') as HTMLInputElement).value;
+
+                if (!label || !name || !phone || !house || !street || !city || !pincode) {
+                    Swal.showValidationMessage('Please fill all critical coordinates');
+                    return false;
+                }
+                return { label, name, phone, house, street, city, pincode };
+            }
+        });
+
+        if (formValues) {
+            try {
+                const res = await API.post('addresses/', {
+                    address_label: formValues.label,
+                    full_name: formValues.name,
+                    mobile_number: formValues.phone,
+                    house_info: formValues.house,
+                    street_info: formValues.street,
+                    city: formValues.city,
+                    pincode: formValues.pincode,
+                    email: user.email, // fallback
+                    country_region: 'India'
+                });
+                setAddresses([res.data, ...addresses]);
+                Swal.fire({ title: 'Dock Secured!', icon: 'success' });
+            } catch (error) {
+                Swal.fire({ title: 'Failure!', text: 'Could not anchor the new dock.', icon: 'error' });
+            }
+        }
+    };
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -100,7 +162,10 @@ export default function ProfilePage() {
                                 {user?.username ? user.username.charAt(0).toUpperCase() : '👤'}
                             </div>
                             <h2 className="text-3xl font-black mb-2 italic tracking-tight">{user?.username || 'Angler'}</h2>
-                            <p className="text-slate-400 font-bold text-sm mb-8 flex items-center gap-2"><Mail size={14} /> {user?.email}</p>
+                            <p className="text-slate-400 font-bold text-sm mb-4 flex items-center gap-2"><Mail size={14} /> {user?.email}</p>
+                            {user?.mobile && (
+                                <p className="text-blue-400 font-bold text-sm mb-8 flex items-center gap-2"><Phone size={14} /> {user.mobile}</p>
+                            )}
 
                             <div className="flex flex-wrap gap-3">
                                 {user?.is_staff && (
@@ -141,8 +206,13 @@ export default function ProfilePage() {
                                 </h2>
                                 <p className="text-xs font-bold text-slate-400">Manage your frequent delivery locations</p>
                             </div>
-                            <div className="bg-blue-50 text-blue-700 px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest">
-                                {addresses.length} Active
+                            <div className="flex items-center gap-3">
+                                <div className="bg-blue-50 text-blue-700 px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest">
+                                    {addresses.length} Active
+                                </div>
+                                <button onClick={handleAddAddress} className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-500 transition-all shadow-lg shadow-blue-200">
+                                    <Plus size={20} />
+                                </button>
                             </div>
                         </div>
 
@@ -164,8 +234,11 @@ export default function ProfilePage() {
                                         <div>
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center shadow-sm text-blue-600">
-                                                    <Home size={18} />
+                                                    {addr.address_label?.toLowerCase().includes('office') ? <Briefcase size={18} /> : <Home size={18} />}
                                                 </div>
+                                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-lg">
+                                                    {addr.address_label || 'Home'}
+                                                </span>
                                             </div>
                                             <p className="font-black text-slate-900 text-lg mb-1">{addr.full_name}</p>
                                             <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-6 flex items-center gap-1">

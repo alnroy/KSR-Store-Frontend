@@ -3,7 +3,7 @@ import { useContext, useState, useEffect } from 'react';
 import { CartContext } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import API from '@/lib/api';
-import { MapPin, Phone, User, Home, Building2, Landmark, Globe, CheckCircle2, Navigation, Mail, ArrowLeft, Truck, ShieldAlert, MessageCircle } from 'lucide-react';
+import { MapPin, Phone, User, Home, Building2, Landmark, Globe, CheckCircle2, Navigation, Mail, ArrowLeft, Truck, ShieldAlert, MessageCircle, Briefcase } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
 
@@ -232,9 +232,13 @@ export default function CheckoutPage() {
                                             onClick={() => { setSelectedAddressId(addr.id); fillFromSaved(addr); setIsAddingNew(false); }}
                                             className={`shrink-0 snap-start p-4 md:p-5 rounded-2xl md:rounded-3xl border-2 transition-all text-left w-[85%] sm:w-52 md:w-64 max-w-xs ${selectedAddressId === addr.id ? 'border-blue-500 bg-blue-50/50' : 'border-slate-50 bg-slate-50 hover:border-slate-200'}`}
                                         >
-                                            <p className="font-black text-[11px] md:text-sm text-slate-900 mb-1">{addr.full_name}</p>
-                                            <p className="text-[9px] md:text-[10px] text-slate-500 font-bold">{addr.city}, {addr.pincode}</p>
-                                            {addr.is_default && <span className="text-[7px] md:text-[8px] font-black text-blue-600 uppercase mt-2 block">DEFAULT</span>}
+                                            <div className="flex items-center gap-2 mb-2">
+                                                {addr.address_label?.toLowerCase().includes('office') ? <Briefcase size={14} className="text-blue-600" /> : <Home size={14} className="text-blue-600" />}
+                                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{addr.address_label || 'Home'}</span>
+                                            </div>
+                                            <p className="font-black text-[11px] md:text-sm text-slate-900 mb-1 truncate">{addr.full_name}</p>
+                                            <p className="text-[9px] md:text-[10px] text-slate-500 font-bold truncate">{addr.city}, {addr.pincode}</p>
+                                            {addr.is_default && <span className="text-[7px] md:text-[8px] font-black text-blue-400 uppercase mt-2 block">DEFAULT</span>}
                                         </button>
                                     ))}
                                     <button 

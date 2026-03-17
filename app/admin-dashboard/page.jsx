@@ -39,7 +39,7 @@ const AdminDashboard = () => {
     const [pIsCombo, setPIsCombo] = useState(false);
     const [pIsHeroMarquee, setPIsHeroMarquee] = useState(false);
     const [pStock, setPStock] = useState('10');
-
+    const [pCost, setPCost] = useState('');
     const [pCategory, setPCategory] = useState('');
     const [pImage, setPImage] = useState(null); // Primary
     const [pImages, setPImages] = useState([]); // Multiple gallery images
@@ -242,6 +242,7 @@ const AdminDashboard = () => {
         formData.append('description', pDesc);
         formData.append('price', pPrice);
         formData.append('offer_price', pOfferPrice || '');
+        formData.append('cost_price', pCost || '0');
         formData.append('is_combo', pIsCombo ? 'true' : 'false');
         formData.append('is_hero_marquee', pIsHeroMarquee ? 'true' : 'false');
         formData.append('stock', pStock);
@@ -509,7 +510,7 @@ const AdminDashboard = () => {
                             <button
                                 onClick={() => {
                                     setEditingProduct(null); setPName(''); setPBrand(''); setPBrandImage(null); setPDesc(''); setPPrice('');
-                                    setPOfferPrice(''); setPSpecs([{ key: '', value: '' }]); setPVariants([]); setPCategory(categories[0]?.id || ''); setPImages([]); setPImage(null); setIsProductModalOpen(true);
+                                    setPOfferPrice(''); setPCost(''); setPSpecs([{ key: '', value: '' }]); setPVariants([]); setPCategory(categories[0]?.id || ''); setPImages([]); setPImage(null); setIsProductModalOpen(true);
                                 }}
                                 className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs md:text-sm shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all"
                             >
@@ -530,7 +531,7 @@ const AdminDashboard = () => {
                                         <button
                                             onClick={() => {
                                                 setEditingProduct(p); setPName(p.name || ''); setPBrand(p.brand || ''); setPBrandImage(null); setPDesc(p.description || '');
-                                                setPPrice(p.price ?? ''); setPOfferPrice(p.offer_price ?? ''); setPStock(p.stock ?? 10); setPCategory(p.category || ''); setPIsHeroMarquee(!!p.is_hero_marquee);
+                                                setPPrice(p.price ?? ''); setPOfferPrice(p.offer_price ?? ''); setPCost(p.cost_price ?? ''); setPStock(p.stock ?? 10); setPCategory(p.category || ''); setPIsHeroMarquee(!!p.is_hero_marquee);
                                                 setPVariants(p.variants || []); setPImages([]); const loadedSpecs = Object.entries(p.specifications || {}).map(([key, value]) => ({ key, value }));
                                                 setPSpecs(loadedSpecs.length ? loadedSpecs : [{ key: '', value: '' }]); setIsProductModalOpen(true);
                                             }}
@@ -570,28 +571,34 @@ const AdminDashboard = () => {
                     <div className="space-y-8">
                         {/* Summary Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+                            <div className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-sm">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Gross Income</p>
                                 <h3 className="text-3xl font-black text-slate-900 mb-2">₹{orders.reduce((acc, o) => acc + (parseFloat(o.total_amount) || 0), 0).toLocaleString()}</h3>
                                 <div className="flex items-center gap-2 text-green-500 font-bold text-xs">
-                                    <span>↑ 12%</span>
-                                    <span className="text-slate-400">vs Previous Month</span>
+                                    <span>↑ Stable</span>
+                                    <span className="text-slate-400">Net Growth</span>
                                 </div>
                             </div>
-                            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Orders</p>
-                                <h3 className="text-3xl font-black text-slate-900 mb-2">{orders.length}</h3>
+                            <div className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-sm">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Net ROI (%)</p>
+                                <h3 className="text-3xl font-black text-slate-900 mb-2">
+                                    {(() => {
+                                        const totalRevenue = orders.reduce((acc, o) => acc + (parseFloat(o.total_amount) || 0), 0);
+                                        const totalCost = orders.reduce((acc, o) => acc + (o.items?.reduce((iAcc, item) => iAcc + (parseFloat(item.cost_price || 0) * item.quantity), 0) || 0), 0);
+                                        if (totalCost === 0) return '0%';
+                                        return (((totalRevenue - totalCost) / totalCost) * 100).toFixed(1) + '%';
+                                    })()}
+                                </h3>
                                 <div className="flex items-center gap-2 text-blue-500 font-bold text-xs">
-                                    <span>{orders.filter(o => o.status === 'PENDING').length} Pending</span>
-                                    <span className="text-slate-400">Next 24h</span>
+                                    <span>Live Performance</span>
                                 </div>
                             </div>
-                            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Net Productivity</p>
-                                <h3 className="text-3xl font-black text-slate-900 mb-2">94.2%</h3>
+                            <div className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-sm">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Order Volume</p>
+                                <h3 className="text-3xl font-black text-slate-900 mb-2">{orders.length}</h3>
                                 <div className="flex items-center gap-2 text-orange-500 font-bold text-xs">
-                                    <span>Stable</span>
-                                    <span className="text-slate-400">Operational Flow</span>
+                                    <span>{orders.filter(o => o.status === 'PENDING' || o.status === 'PAID').length} Active</span>
+                                    <span className="text-slate-400">Processing</span>
                                 </div>
                             </div>
                         </div>
@@ -599,7 +606,7 @@ const AdminDashboard = () => {
                         {/* Category & Comparison View */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Revenue by Category */}
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                            <div className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm">
                                 <h3 className="text-xl font-black text-slate-900 mb-8">Income by Category</h3>
                                 <div className="space-y-6">
                                     {categories.map(cat => {
@@ -626,36 +633,64 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Weekly Expense / Income Tracker Mockup */}
-                            <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl">
-                                <p className="text-[10px] font-black tracking-widest uppercase text-slate-500 mb-2">Prototype Mockup</p>
-                                <h3 className="text-xl font-black mb-8 text-blue-400 italic">Projected ROI Analytics</h3>
-                                <div className="flex gap-4 items-end h-64 mb-8 opacity-50">
-                                    {[65, 45, 85, 30, 95, 75, 55].map((h, i) => (
-                                        <div key={i} className="flex-1 flex flex-col items-center gap-3">
-                                            <div className="w-full bg-white/10 rounded-t-xl group relative flex flex-col justify-end overflow-hidden" style={{ height: '100%' }}>
-                                                <div className="w-full bg-blue-500 rounded-t-xl transition-all duration-1000" style={{ height: `${h}%` }}></div>
-                                                <div className="w-full bg-red-400 opacity-40 absolute bottom-0" style={{ height: `${h * 0.4}%` }}></div>
-                                            </div>
-                                            <span className="text-[10px] font-black text-slate-500 uppercase">W{i+1}</span>
-                                        </div>
-                                    ))}
+                            {/* ROI Analytics Tracker */}
+                            <div className="bg-slate-900 text-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+                                <h3 className="text-xl font-black mb-8 text-blue-400 italic relative z-10">Project ROI Analytics</h3>
+                                <div className="flex gap-2 md:gap-4 items-end h-48 md:h-64 mb-8 relative z-10">
+                                    {(() => {
+                                        // Simple weekly grouping for the chart
+                                        const now = new Date();
+                                        return Array.from({length: 7}).map((_, i) => {
+                                            const day = new Date(now);
+                                            day.setDate(now.getDate() - (6 - i));
+                                            const dayStr = day.toISOString().split('T')[0];
+                                            
+                                            const dayOrders = orders.filter(o => o.created_at.startsWith(dayStr));
+                                            const dayRev = dayOrders.reduce((acc, o) => acc + (parseFloat(o.total_amount) || 0), 0);
+                                            const dayCost = dayOrders.reduce((acc, o) => acc + (o.items?.reduce((iAcc, item) => iAcc + (parseFloat(item.cost_price || 0) * item.quantity), 0) || 0), 0);
+                                            
+                                            const maxRef = Math.max(...orders.map(o => parseFloat(o.total_amount) || 1), 5000);
+                                            const hHeight = Math.min(100, (dayRev / maxRef) * 100);
+                                            const cHeight = Math.min(100, (dayCost / (dayRev || 1)) * 100);
+
+                                            return (
+                                                <div key={i} className="flex-1 flex flex-col items-center gap-3 h-full justify-end">
+                                                    <div className="w-full bg-white/5 rounded-t-xl group relative flex flex-col justify-end overflow-hidden" style={{ height: '100%' }}>
+                                                        <div className="w-full bg-blue-500 rounded-t-xl transition-all duration-1000" style={{ height: `${hHeight}%` }}>
+                                                            {dayRev > 0 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-black text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">₹{Math.round(dayRev/1000)}k</div>}
+                                                        </div>
+                                                        <div className="w-full bg-red-400 opacity-40 absolute bottom-0" style={{ height: `${hHeight * (cHeight/100)}%` }}></div>
+                                                    </div>
+                                                    <span className="text-[8px] font-black text-slate-500 uppercase">{day.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4 relative z-10">
                                     <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                                        <p className="text-[10px] font-black text-blue-400 uppercase mb-1">Dummy Growth Data</p>
-                                        <h4 className="text-xl font-black text-slate-400">+₹---</h4>
+                                        <p className="text-[10px] font-black text-blue-400 uppercase mb-1">Total Net Profit</p>
+                                        <h4 className="text-xl font-black text-white">
+                                            ₹{(() => {
+                                                const rev = orders.reduce((acc, o) => acc + (parseFloat(o.total_amount) || 0), 0);
+                                                const cost = orders.reduce((acc, o) => acc + (o.items?.reduce((iAcc, item) => iAcc + (parseFloat(item.cost_price || 0) * item.quantity), 0) || 0), 0);
+                                                return (rev - cost).toLocaleString();
+                                            })()}
+                                        </h4>
                                     </div>
                                     <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                                        <p className="text-[10px] font-black text-red-400 uppercase mb-1">Dummy Operational Exp</p>
-                                        <h4 className="text-xl font-black text-slate-400">₹---</h4>
+                                        <p className="text-[10px] font-black text-red-500 uppercase mb-1">Total Expenses</p>
+                                        <h4 className="text-xl font-black text-white">
+                                            ₹{orders.reduce((acc, o) => acc + (o.items?.reduce((iAcc, item) => iAcc + (parseFloat(item.cost_price || 0) * item.quantity), 0) || 0), 0).toLocaleString()}
+                                        </h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Recent Performance Log */}
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                        <div className="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm">
                            <h3 className="text-xl font-black text-slate-900 mb-8">Daily Productivity Breakdown</h3>
                            <div className="overflow-x-auto">
                               <table className="w-full text-left">
@@ -668,24 +703,41 @@ const AdminDashboard = () => {
                                     </tr>
                                  </thead>
                                  <tbody className="text-slate-700 font-bold">
-                                    <tr className="border-b border-slate-50">
-                                       <td className="py-4 text-sm">Real-time Today</td>
-                                       <td className="py-4 text-center text-green-600">₹8,450</td>
-                                       <td className="py-4 text-center text-red-400">₹2,100</td>
-                                       <td className="py-4 text-right text-slate-900">₹6,350</td>
-                                    </tr>
-                                    <tr className="border-b border-slate-50">
-                                       <td className="py-4 text-sm">Last 24 Hours</td>
-                                       <td className="py-4 text-center text-green-600">₹12,200</td>
-                                       <td className="py-4 text-center text-red-400">₹4,500</td>
-                                       <td className="py-4 text-right text-slate-900">₹7,700</td>
-                                    </tr>
-                                    <tr>
-                                       <td className="py-4 text-sm text-blue-600 font-black italic">Projected Month End</td>
-                                       <td className="py-4 text-center text-blue-600">---</td>
-                                       <td className="py-4 text-center text-blue-600">---</td>
-                                       <td className="py-4 text-right text-blue-600 font-black">₹1.2L Est.</td>
-                                    </tr>
+                                    {(() => {
+                                        const now = new Date();
+                                        const todayStr = now.toISOString().split('T')[0];
+                                        const calc = (f) => {
+                                            const filtered = (orders || []).filter(f);
+                                            const rev = filtered.reduce((acc, o) => acc + (parseFloat(o.total_amount) || 0), 0);
+                                            const cost = filtered.reduce((acc, o) => acc + (o.items?.reduce((iAcc, item) => iAcc + (parseFloat(item.cost_price || 0) * item.quantity), 0) || 0), 0);
+                                            return { rev, cost, margin: rev - cost };
+                                        };
+                                        const td = calc(o => o.created_at.startsWith(todayStr));
+                                        const h24 = calc(o => (now.getTime() - new Date(o.created_at).getTime()) < 86400000);
+                                        const mo = calc(o => new Date(o.created_at).getMonth() === now.getMonth());
+                                        return (
+                                            <>
+                                                <tr className="border-b border-slate-50">
+                                                    <td className="py-4 text-sm">Today</td>
+                                                    <td className="py-4 text-center text-green-600">₹{td.rev.toLocaleString()}</td>
+                                                    <td className="py-4 text-center text-red-500">₹{td.cost.toLocaleString()}</td>
+                                                    <td className="py-4 text-right font-black">₹{td.margin.toLocaleString()}</td>
+                                                </tr>
+                                                <tr className="border-b border-slate-50">
+                                                    <td className="py-4 text-sm">Last 24h</td>
+                                                    <td className="py-4 text-center text-green-600">₹{h24.rev.toLocaleString()}</td>
+                                                    <td className="py-4 text-center text-red-500">₹{h24.cost.toLocaleString()}</td>
+                                                    <td className="py-4 text-right font-black">₹{h24.margin.toLocaleString()}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="py-4 text-sm text-blue-600 font-black">This Month</td>
+                                                    <td className="py-4 text-center text-blue-600">₹{mo.rev.toLocaleString()}</td>
+                                                    <td className="py-4 text-center text-red-400">₹{mo.cost.toLocaleString()}</td>
+                                                    <td className="py-4 text-right text-blue-600 font-black">₹{mo.margin.toLocaleString()}</td>
+                                                </tr>
+                                            </>
+                                        );
+                                     })()}
                                  </tbody>
                               </table>
                            </div>
@@ -846,10 +898,23 @@ const AdminDashboard = () => {
                                 <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Show in Hero Marquee</span>
                             </label>
                         </div>
-                        <div className="grid grid-cols-3 gap-4 mb-4">
-                            <input suppressHydrationWarning type="number" required value={pPrice} onChange={e => setPPrice(e.target.value)} placeholder="Price" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl font-black" />
-                            <input suppressHydrationWarning type="number" value={pOfferPrice} onChange={e => setPOfferPrice(e.target.value)} placeholder="Offer" className="p-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600" />
-                            <input suppressHydrationWarning type="number" required value={pStock} onChange={e => setPStock(e.target.value)} placeholder="Stock" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl font-black" />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Selling Price</label>
+                                <input suppressHydrationWarning type="number" required value={pPrice} onChange={e => setPPrice(e.target.value)} placeholder="Price" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-black" />
+                            </div>
+                            <div>
+                                <label className="text-[7px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-1 block">Offer Price</label>
+                                <input suppressHydrationWarning type="number" value={pOfferPrice} onChange={e => setPOfferPrice(e.target.value)} placeholder="Offer" className="p-4 w-full bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600" />
+                            </div>
+                            <div>
+                                <label className="text-[7px] font-black text-red-400 uppercase tracking-widest ml-1 mb-1 block">Cost Price</label>
+                                <input suppressHydrationWarning type="number" required value={pCost} onChange={e => setPCost(e.target.value)} placeholder="Cost" className="p-4 w-full bg-red-50 border border-red-100 rounded-2xl font-black text-red-600" />
+                            </div>
+                            <div>
+                                <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Stock Qty</label>
+                                <input suppressHydrationWarning type="number" required value={pStock} onChange={e => setPStock(e.target.value)} placeholder="Stock" className="p-4 w-full bg-slate-50 border border-slate-100 rounded-2xl font-black" />
+                            </div>
                         </div>
                         <div className="mb-6">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Category</label>

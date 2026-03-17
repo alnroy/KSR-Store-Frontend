@@ -295,7 +295,20 @@ function HomeContent() {
       setProducts(res.data.results || res.data);
       setComment('');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || "Failed to submit review.";
+      let errorMessage = "Failed to submit review.";
+      
+      if (err.response?.data) {
+        const data = err.response.data;
+        if (data.error) {
+          errorMessage = data.error;
+        } else if (typeof data === 'object') {
+          // Handle DRF field-specific errors (e.g., { comment: ["This field is required"] })
+          errorMessage = Object.entries(data)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join('\n');
+        }
+      }
+
       if (errorMessage.toLowerCase().includes("purchased")) {
         Swal.fire({ icon: 'error', title: 'Verified Buyers Only', text: 'You can only review items you have successfully purchased and paid for.' });
       } else {

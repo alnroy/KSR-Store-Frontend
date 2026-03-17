@@ -4,104 +4,177 @@ import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CartContext } from '@/context/CartContext';
 import { AuthContext } from '@/context/AuthContext';
-import { Heart, Search, X, Star, ShoppingCart, Zap, Filter, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Heart, Search, X, Star, ShoppingCart, Zap, Filter, ArrowRight, ArrowLeft, Anchor } from 'lucide-react';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { WishlistContext } from '@/context/WishlistContext';
 import ProductSection from '@/components/ProductSection';
 import ShoppableVideos from '@/components/ShoppableVideos';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
-// --- HELPER COMPONENT: IN-BETWEEN SLIDESHOW ---
-function RandomProductSlideshow({ products, onSelect }: { products: any[], onSelect: (p: any) => void }) {
+// --- LOADING OVERLAY COMPONENT ---
+function LoadingOverlay() {
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-950/80 flex flex-col items-center justify-center transition-all animate-in fade-in duration-500 text-center px-4">
+      <div className="relative">
+        <div className="w-24 h-24 border-4 border-blue-500/20 rounded-full animate-spinner"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Anchor className="text-blue-500 animate-pulse" size={32} />
+        </div>
+      </div>
+      <h3 className="mt-8 text-white font-black text-2xl tracking-tighter uppercase italic">KSR Aqua World</h3>
+      <p className="mt-2 text-blue-400 font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">Casting the Line...</p>
+    </div>
+  );
+}
+
+// --- PRODUCT SKELETON ---
+function ProductSkeleton() {
+  return (
+    <div className="bg-slate-50 rounded-2xl p-4 space-y-4 border border-slate-100 h-full">
+      <div className="aspect-square skeleton w-full bg-slate-200"></div>
+      <div className="h-4 skeleton w-2/3 bg-slate-200"></div>
+      <div className="h-3 skeleton w-1/3 bg-slate-200"></div>
+      <div className="h-10 skeleton w-full bg-slate-200 mt-4 rounded-xl"></div>
+    </div>
+  );
+}
+
+function RandomProductSlideshow({ products, onSelect, variant = 'card' }: { products: any[], onSelect: (p: any) => void, variant?: 'hero' | 'card' }) {
+  // Use a ref to store the randomized subset so it doesn't reshuffle on every timer tick
+  const [displayProducts, setDisplayProducts] = useState<any[]>([]);
   const [index, setIndex] = useState(0);
+
   useEffect(() => {
-    if (products.length <= 1) return;
-    const interval = setInterval(() => setIndex(prev => (prev + 1) % products.length), 4000);
-    return () => clearInterval(interval);
+    if (products.length === 0) return;
+    // Shuffle and take a subset (max 12 for variety)
+    const shuffled = [...products].sort(() => 0.5 - Math.random());
+    setDisplayProducts(shuffled.slice(0, 12));
+    setIndex(0);
   }, [products]);
 
-  if (products.length === 0) return null;
-  const p = products[index];
+  useEffect(() => {
+    if (displayProducts.length <= 1) return;
+    const interval = setInterval(() => {
+      setIndex(prev => (prev + 1) % displayProducts.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [displayProducts.length]);
+
+  if (displayProducts.length === 0) return null;
+  const p = displayProducts[index];
+
+  const containerClasses = variant === 'hero' 
+    ? "relative w-full min-h-[450px] md:h-[550px] bg-slate-950 flex flex-col items-center justify-center cursor-pointer overflow-hidden border-none rounded-none mb-0"
+    : "my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[600px] md:h-[550px] flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5";
 
   return (
     <div 
         onClick={() => onSelect(p)}
-        className="my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[600px] md:h-[550px] flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5"
+        className={containerClasses}
     >
-        {/* DYNAMIC BACKGROUND ZOOM (Ken Burns Effect) */}
+        {/* CINEMATIC BACKGROUND */}
         <div key={`bg-${index}`} className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <img 
                 src={p.image} 
-                className="w-full h-full object-cover blur-3xl opacity-20 animate-ken-burns" 
+                className={variant === 'hero' 
+                    ? "w-full h-full object-cover opacity-80 animate-ken-burns scale-110" 
+                    : "w-full h-full object-cover blur-3xl opacity-20 animate-ken-burns"} 
                 alt="" 
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950/80 to-transparent"></div>
+            {variant === 'hero' 
+                ? <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/20 to-slate-950/80"></div>
+                : <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950/80 to-transparent"></div>
+            }
         </div>
 
-        {/* CONTENT GRID */}
-        <div className="relative z-20 w-full flex flex-col md:flex-row items-center justify-center px-8 md:px-20 gap-8 md:gap-12 py-16 md:py-0">
-            
-            {/* PRODUCT IMAGE (ZOOM & FLOAT) */}
-            <div className="w-full flex items-center justify-center order-1 md:order-2 mb-4 md:mb-0">
-                <div 
-                    key={`img-cont-${index}`} 
-                    className="relative w-full max-w-[260px] md:max-w-[450px] aspect-square flex items-center justify-center bg-white/5 rounded-full animate-in fade-in duration-700 p-6 z-30"
-                >
-                    <img 
-                        src={p.image || '/insta_logo.jpg'} 
-                        className="max-w-full max-h-full object-contain drop-shadow-2xl transition-all duration-700 hover:scale-105 z-40 relative" 
-                        alt={p.name} 
-                    />
-                    {/* Shadow underneath */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-black/40 blur-3xl rounded-full -z-10 animate-pulse"></div>
+        {/* HERO CONTENT LAYOUT */}
+        {variant === 'hero' ? (
+            <div className="relative z-20 w-full max-w-[1500px] mx-auto px-6 md:px-20 h-full flex flex-col justify-start pt-12 md:pt-20 items-start text-left">
+                <div key={`labels-${index}`} className="animate-in fade-in slide-in-from-top-12 duration-1000">
+                    <div className="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-xl border border-blue-400/30 px-5 py-2 rounded-full mb-6">
+                        <Zap className="text-blue-400 w-4 h-4 fill-blue-400" />
+                        <span className="text-blue-400 text-[10px] md:text-xs font-black uppercase tracking-[0.4em]">Dispatch Spotlight</span>
+                    </div>
+                    
+                    <h1 className="text-2xl md:text-[clamp(1.8rem,5vw,4.2rem)] font-black text-white leading-[0.9] tracking-tighter uppercase italic mb-8 drop-shadow-2xl max-w-4xl line-clamp-2 break-words">
+                        {p.name}
+                    </h1>
+                    
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-12">
+                        <div className="flex items-center gap-6">
+                            <p className="text-blue-500 text-4xl md:text-7xl font-black italic drop-shadow-lg">₹{p.offer_price || p.price}</p>
+                            {p.offer_price && (
+                                <p className="text-slate-400 text-xl md:text-3xl line-through font-bold opacity-70">₹{p.price}</p>
+                            )}
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 hidden md:block">
+                            <p className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Gear Specs</p>
+                            <p className="text-white font-bold text-sm italic">{p.category_name} • Professional Grade</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-10 md:mt-16 flex items-center gap-6">
+                        <button className="bg-blue-600 text-white px-12 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-white hover:text-slate-950 transition-all shadow-[0_20px_50px_rgba(59,130,246,0.3)] hover:scale-105 active:scale-95">
+                            Inspect Gear Now ⚓
+                        </button>
+                        <div className="hidden md:flex flex-col">
+                            <span className="text-white/40 text-[9px] font-black uppercase tracking-[0.3em]">Angler Verified</span>
+                            <div className="flex gap-1">
+                                {[1,2,3,4,5].map(s => <Star key={s} size={14} className="text-amber-400 fill-amber-400" />)}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {/* TEXT CONTENT */}
-            <div className="flex-1 flex flex-col justify-center text-center md:text-left order-2 md:order-1 z-30">
-                <div key={`tag-${index}`} className="inline-flex items-center gap-2 bg-blue-500/10 backdrop-blur-md border border-blue-500/20 px-4 py-1.5 rounded-full mb-6 w-fit mx-auto md:mx-0 animate-in fade-in slide-in-from-left-4 duration-700">
-                    <Zap className="text-blue-400 w-3.5 h-3.5 fill-blue-400" />
-                    <span className="text-blue-400 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em]">Premium Spotlight Gear</span>
+        ) : (
+            /* STANDARD CARD GRID */
+            <div className="relative z-20 w-full flex flex-col md:flex-row items-center justify-center px-8 md:px-20 gap-8 md:gap-12 py-16 md:py-0">
+                {/* ... existing card grid content ... */}
+                <div className="w-full flex items-center justify-center order-1 md:order-2 mb-4 md:mb-0">
+                    <div 
+                        key={`img-cont-${index}`} 
+                        className="relative w-full max-w-[260px] md:max-w-[450px] aspect-square flex items-center justify-center bg-white/5 rounded-full animate-in fade-in duration-700 p-6 z-30"
+                    >
+                        <img 
+                            src={p.image || '/insta_logo.jpg'} 
+                            className="max-w-full max-h-full object-contain drop-shadow-2xl transition-all duration-700 hover:scale-105 z-40 relative" 
+                            alt={p.name} 
+                        />
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-black/40 blur-3xl rounded-full -z-10 animate-pulse"></div>
+                    </div>
                 </div>
-                
-                <h3 key={`name-${index}`} className="text-3xl md:text-7xl font-black text-white mb-4 md:mb-6 leading-[0.9] tracking-tighter uppercase italic animate-in fade-in slide-in-from-left-8 duration-700 delay-100">
-                    {p.name}
-                </h3>
-                
-                <div key={`price-${index}`} className="flex items-center gap-4 md:gap-6 justify-center md:justify-start animate-in fade-in slide-in-from-left-12 duration-700 delay-200">
-                    <p className="text-blue-500 text-2xl md:text-5xl font-black italic">₹{p.offer_price || p.price}</p>
-                    {p.offer_price && (
-                        <p className="text-slate-500 text-lg md:text-xl line-through font-bold">₹{p.price}</p>
-                    )}
-                </div>
 
-                <div className="mt-8 md:mt-12 hidden md:block animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-                    <button className="bg-white text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-2xl hover:scale-105 active:scale-95">
-                        Claim This Gear →
-                    </button>
+                <div className="flex-1 flex flex-col justify-center text-center md:text-left order-2 md:order-1 z-30">
+                    <div key={`tag-${index}`} className="inline-flex items-center gap-2 bg-blue-500/10 backdrop-blur-md border border-blue-500/20 px-4 py-1.5 rounded-full mb-6 w-fit mx-auto md:mx-0 animate-in fade-in slide-in-from-left-4 duration-700">
+                        <Zap className="text-blue-400 w-3.5 h-3.5 fill-blue-400" />
+                        <span className="text-blue-400 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em]">Premium Spotlight Gear</span>
+                    </div>
+                    
+                    <h3 key={`name-${index}`} className="text-3xl md:text-7xl font-black text-white mb-4 md:mb-6 leading-[0.9] tracking-tighter uppercase italic animate-in fade-in slide-in-from-left-8 duration-700 delay-100">
+                        {p.name}
+                    </h3>
+                    
+                    <div key={`price-${index}`} className="flex items-center gap-4 md:gap-6 justify-center md:justify-start animate-in fade-in slide-in-from-left-12 duration-700 delay-200">
+                        <p className="text-blue-500 text-2xl md:text-5xl font-black italic">₹{p.offer_price || p.price}</p>
+                        {p.offer_price && (
+                            <p className="text-slate-500 text-lg md:text-xl line-through font-bold">₹{p.price}</p>
+                        )}
+                    </div>
+
+                    <div className="mt-8 md:mt-12 hidden md:block animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                        <button className="bg-white text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-2xl hover:scale-105 active:scale-95">
+                            Claim This Gear →
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            {/* PRODUCT IMAGE (ZOOM & FLOAT) */}
-            <div className="flex-1 w-full flex items-center justify-center order-1 md:order-2">
-                <div 
-                    key={`img-cont-${index}`} 
-                    className="relative w-full max-w-[280px] md:max-w-[500px] aspect-square flex items-center justify-center bg-white/5 rounded-full animate-in fade-in duration-700 p-6"
-                >
-                    <img 
-                        src={p.image || '/insta_logo.jpg'} 
-                        className="max-w-full max-h-full object-contain drop-shadow-2xl transition-all duration-700 hover:scale-105" 
-                        alt={p.name} 
-                    />
-                    {/* Shadow underneath */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-black/40 blur-3xl rounded-full -z-10 animate-pulse"></div>
-                </div>
-            </div>
-        </div>
+        )}
 
         {/* PROGRESS INDICATORS */}
         <div className="absolute bottom-10 left-0 right-0 z-30 flex justify-center gap-3">
-            {products.map((_, i) => (
+            {displayProducts.map((_, i) => (
                 <div 
                     key={i} 
                     className={`h-1.5 rounded-full transition-all duration-700 ${i === index ? 'bg-blue-500 w-16 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/10 w-4 hover:bg-white/20'}`} 
@@ -138,6 +211,19 @@ function HomeContent() {
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 12;
+  
+  // --- SYNC SELECTED PRODUCT TO URL ---
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (selectedProduct) {
+      params.set('product', selectedProduct.id.toString());
+    } else {
+      params.delete('product');
+    }
+    // Use window.history to avoid unnecessary re-mounts from router.push
+    const newPath = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, '', newPath);
+  }, [selectedProduct]);
 
   // Auto-open product from URL
   useEffect(() => {
@@ -156,17 +242,20 @@ function HomeContent() {
 
   // Hero Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     axios.get('https://alnroy.pythonanywhere.com/api/products/')
       .then(res => {
         const fetchedData = res.data.results || (Array.isArray(res.data) ? res.data : []);
         setProducts(fetchedData);
+        setTimeout(() => setIsLoading(false), 800); // Give it a tiny bit more feel
       })
-      .catch(err => console.error("Fetch error:", err));
+      .catch(err => {
+        console.error("Fetch error:", err);
+        setIsLoading(false);
+      });
   }, []);
 
   const uniqueCategories = Array.from(new Set(products.map((p: any) => p.category_name).filter(Boolean)));
@@ -291,8 +380,18 @@ function HomeContent() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       Swal.fire({ icon: 'success', title: 'Tight Lines!', text: 'Review posted successfully.', timer: 2000, showConfirmButton: false });
+      
+      // Refresh products list
       const res = await axios.get('https://alnroy.pythonanywhere.com/api/products/');
-      setProducts(res.data.results || res.data);
+      const updatedProducts = res.data.results || (Array.isArray(res.data) ? res.data : []);
+      setProducts(updatedProducts);
+
+      // --- INSTANT UI UPDATE: Refresh the selected product reviews ---
+      const updatedSelected = updatedProducts.find((p: any) => p.id === selectedProduct.id);
+      if (updatedSelected) {
+        setSelectedProduct(updatedSelected);
+      }
+      
       setComment('');
     } catch (err: any) {
       let errorMessage = "Failed to submit review.";
@@ -319,7 +418,8 @@ function HomeContent() {
     }
   };
 
-  const heroProducts = products.filter((p: any) => p.is_hero_marquee);
+  const marqueeProducts = products.filter((p: any) => p.is_hero_marquee);
+  const heroProducts = marqueeProducts.length >= 3 ? marqueeProducts : products.slice(0, 8);
 
   useEffect(() => {
     if (heroProducts.length <= 1) return;
@@ -359,67 +459,23 @@ function HomeContent() {
 
   return (
     <>
-    <div className="pb-20">
-      {/* ===== HERO CAROUSEL ===== */}
-      <div className="bg-slate-900 relative h-[400px] md:h-[500px] mb-8 overflow-hidden">
-        {heroProducts.length > 0 ? (
-          heroProducts.map((product: any, index: number) => (
-            <div
-              key={product.id}
-              onClick={() => setSelectedProduct(product)}
-              className={`absolute inset-0 transition-opacity duration-1000 cursor-pointer ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-            >
-              <div className="absolute inset-0 bg-black/50 z-10"></div>
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover md:object-contain bg-slate-800" />
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-4">
-                {product.is_combo && (
-                  <span className="bg-amber-500 text-white text-xs md:text-sm font-black px-4 py-1 rounded-full uppercase tracking-widest mb-4">Special Combo</span>
-                )}
-                {product.offer_price && !product.is_combo && (
-                  <span className="bg-red-500 text-white text-xs md:text-sm font-black px-4 py-1 rounded-full uppercase tracking-widest mb-4">Special Offer</span>
-                )}
-                <h1 className="text-3xl md:text-6xl font-black text-white mb-4 drop-shadow-md">{product.name}</h1>
-                <p className="text-lg md:text-2xl font-bold text-white drop-shadow-md mb-6">
-                  {product.offer_price ? (
-                    <>
-                      <span className="line-through text-slate-300 mr-3">₹{product.price}</span>
-                      <span className="text-blue-400">₹{product.offer_price}</span>
-                    </>
-                  ) : (
-                    <span>₹{product.price}</span>
-                  )}
-                </p>
-                <button
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full font-bold transition-all shadow-lg"
-                  onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center px-4 z-10 relative">
-            <h1 className="text-3xl md:text-7xl font-black mb-4 md:mb-6 tracking-tight text-white">
-              Gear Up for the <span className="text-blue-500">Big Catch</span>
-            </h1>
-            <p className="text-xs md:text-xl text-slate-400 mb-6 md:mb-10 max-w-2xl mx-auto px-4 leading-relaxed">
-              Professional grade tackle, rods, and reels for serious anglers.
-            </p>
-            <Link href="#products" className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all">
-              Shop All Gear
-            </Link>
-          </div>
+    {isLoading && <LoadingOverlay />}
+    <div className="pb-20 bg-white pt-0">
+      {/* ===== HERO SPOTLIGHT (True Hero Style) ===== */}
+      <div className="w-full">
+        {!isLoading && heroProducts.length > 0 && (
+          <RandomProductSlideshow 
+            variant="hero"
+            products={heroProducts} 
+            onSelect={(p) => { setSelectedProduct(p); setSelectedOptions({}); }} 
+          />
         )}
-        {heroProducts.length > 1 && (
-          <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-30">
-            {heroProducts.map((_: any, idx: number) => (
-              <button
-                key={idx}
-                onClick={(e) => { e.stopPropagation(); setCurrentSlide(idx); }}
-                className={`h-3 rounded-full transition-all ${idx === currentSlide ? 'bg-blue-500 w-8' : 'bg-slate-400/50 hover:bg-slate-300 w-3'}`}
-              />
-            ))}
+        {isLoading && products.length === 0 && (
+          <div className="bg-slate-950 h-[500px] md:h-[650px] flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-blue-500/20 rounded-full animate-spinner mx-auto mb-4"></div>
+                <p className="text-slate-500 font-bold animate-pulse uppercase tracking-[0.2em] text-[10px]">Casting Spotlight Gear...</p>
+              </div>
           </div>
         )}
       </div>
@@ -431,48 +487,66 @@ function HomeContent() {
           <div className="h-[1px] flex-1 bg-slate-100 ml-6"></div>
         </div>
         <div className="flex gap-6 md:gap-12 overflow-x-auto no-scrollbar pb-6">
-          {/* All Gear Circle */}
-          <button
-            suppressHydrationWarning
-            onClick={handleAllGear}
-            className="flex flex-col items-center gap-4 shrink-0 group"
-          >
-            <div className={`w-20 h-20 md:w-28 md:h-28 rounded-full border-[3px] transition-all p-1 bg-white shadow-sm overflow-hidden ${categoryQuery === 'All' && !searchQuery ? 'border-blue-500' : 'border-slate-100 group-hover:border-blue-500'}`}>
-              <div className="w-full h-full bg-slate-900 flex items-center justify-center rounded-full group-hover:bg-blue-600 transition-colors">
-                <span className="text-2xl md:text-3xl">🎣</span>
+          {isLoading && products.length === 0 ? (
+            [1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="flex flex-col items-center gap-4 shrink-0">
+                <div className="w-20 h-20 md:w-28 md:h-28 rounded-full skeleton bg-slate-100 italic"></div>
+                <div className="h-3 w-12 skeleton bg-slate-100"></div>
               </div>
-            </div>
-            <span className={`text-[10px] md:text-xs font-black uppercase tracking-tighter ${categoryQuery === 'All' && !searchQuery ? 'text-blue-600' : 'text-slate-500 group-hover:text-blue-600'}`}>
-              All Gear
-            </span>
-          </button>
-
-          {uniqueCategories.map((cat: any) => {
-            const productForCat = products.find((p: any) => p.category_name === cat && p.image);
-            const imgUrl = productForCat?.image || "https://images.unsplash.com/photo-1544372011-80796395b08c?q=80&w=200&h=200&fit=crop";
-            return (
+            ))
+          ) : (
+            <>
+              {/* All Gear Circle */}
               <button
                 suppressHydrationWarning
-                key={cat}
-                onClick={() => handleCategoryClick(cat)}
+                onClick={handleAllGear}
                 className="flex flex-col items-center gap-4 shrink-0 group"
               >
-                <div className={`w-20 h-20 md:w-28 md:h-28 rounded-full border-[3px] transition-all p-1 bg-white shadow-sm overflow-hidden ${categoryQuery === cat ? 'border-blue-500' : 'border-slate-100 group-hover:border-blue-500'}`}>
-                  <img src={imgUrl} alt={cat} className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-125" />
+                <div className={`w-20 h-20 md:w-28 md:h-28 rounded-full border-[3px] transition-all p-1 bg-white shadow-sm overflow-hidden ${categoryQuery === 'All' && !searchQuery ? 'border-blue-500' : 'border-slate-100 group-hover:border-blue-500'}`}>
+                  <div className="w-full h-full bg-slate-900 flex items-center justify-center rounded-full group-hover:bg-blue-600 transition-colors">
+                    <span className="text-2xl md:text-3xl">🎣</span>
+                  </div>
                 </div>
-                <span className={`text-[10px] md:text-xs font-black uppercase tracking-tighter ${categoryQuery === cat ? 'text-blue-600' : 'text-slate-500 group-hover:text-blue-600'}`}>
-                  {cat}
+                <span className={`text-[10px] md:text-xs font-black uppercase tracking-tighter ${categoryQuery === 'All' && !searchQuery ? 'text-blue-600' : 'text-slate-500 group-hover:text-blue-600'}`}>
+                  All Gear
                 </span>
               </button>
-            );
-          })}
+
+              {uniqueCategories.map((cat: any) => {
+                const productForCat = products.find((p: any) => p.category_name === cat && p.image);
+                const imgUrl = productForCat?.image || "https://images.unsplash.com/photo-1544372011-80796395b08c?q=80&w=200&h=200&fit=crop";
+                return (
+                  <button
+                    suppressHydrationWarning
+                    key={cat}
+                    onClick={() => handleCategoryClick(cat)}
+                    className="flex flex-col items-center gap-4 shrink-0 group"
+                  >
+                    <div className={`w-20 h-20 md:w-28 md:h-28 rounded-full border-[3px] transition-all p-1 bg-white shadow-sm overflow-hidden ${categoryQuery === cat ? 'border-blue-500' : 'border-slate-100 group-hover:border-blue-500'}`}>
+                      <img src={imgUrl} alt={cat} className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-125" />
+                    </div>
+                    <span className={`text-[10px] md:text-xs font-black uppercase tracking-tighter ${categoryQuery === cat ? 'text-blue-600' : 'text-slate-500 group-hover:text-blue-600'}`}>
+                      {cat}
+                    </span>
+                  </button>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
+ 
+
 
       {/* ===== PRODUCTS SECTION ===== */}
       <div id="products" className="max-w-[1500px] mx-auto px-4 scroll-mt-24">
-        {/* MAIN FEED OR SEARCH RESULTS */}
-        {searchQuery || categoryQuery !== 'All' || isNewArrivals || filterQuery !== 'all' || minPrice > 0 || maxPrice < Infinity ? (
+        {isLoading && products.length === 0 ? (
+          <div className="py-20">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[1,2,3,4,5,6,7,8].map(i => <ProductSkeleton key={i} />)}
+            </div>
+          </div>
+        ) : searchQuery || categoryQuery !== 'All' || isNewArrivals || filterQuery !== 'all' || minPrice > 0 || maxPrice < Infinity ? (
           <ProductSection 
             title={searchQuery ? `Search Results: ${searchQuery}` : categoryQuery !== 'All' ? `${categoryQuery} Gear` : "Filtered Results"}
             products={filteredProducts}
@@ -512,9 +586,9 @@ function HomeContent() {
                </div>
             </div>
 
-            {/* Random Slideshow Break 1 */}
+            {/* Random Slideshow Break 1: BUDGET PICKS (Under 2000) */}
             <RandomProductSlideshow 
-                products={products.filter(p => p.average_rating >= 4.5).slice(0, 5)} 
+                products={products.filter(p => (parseFloat(p.offer_price || p.price)) <= 2000 && !p.is_hero_marquee)} 
                 onSelect={(p) => { setSelectedProduct(p); setSelectedOptions({}); }}
             />
 
@@ -542,10 +616,10 @@ function HomeContent() {
                   isInWishlist={isInWishlist}
                 />
                 
-                {/* Insert another slideshow after every 3 categories */}
+                {/* Insert another slideshow after every 3 categories: HIGH RATED (Excluding category context) */}
                 {idx % 3 === 2 && (
                     <RandomProductSlideshow 
-                        products={products.slice(idx, idx + 5)} 
+                        products={products.filter(p => p.average_rating >= 4.5 && p.category_name !== cat && !p.is_hero_marquee)} 
                         onSelect={(p) => { setSelectedProduct(p); setSelectedOptions({}); }}
                     />
                 )}

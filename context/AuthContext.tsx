@@ -2,6 +2,7 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
+import api from '../lib/api';
 import axios from 'axios';
 
 interface AuthContextType {
@@ -25,9 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const fetchUser = async (token: string) => {
         try {
-            const res = await axios.get('https://alnroy.pythonanywhere.com/api/auth/me/', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            // Using the api utility which handles the Bearer token automatically
+            const res = await api.get('/auth/me/');
             setUser(res.data);
         } catch (err) {
             console.error("Failed to fetch user", err);

@@ -26,9 +26,13 @@ export default function ProfilePage() {
                 '<label class="text-[10px] font-black text-slate-400 uppercase">House / Building Info</label>' +
                 '<input id="swal-house" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="House No / Bldg">' +
                 '<label class="text-[10px] font-black text-slate-400 uppercase">Street / Area</label>' +
-                '<input id="swal-street" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Street / Area">' +
+                '<input id="swal-street" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Street / Area / Village">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">Landmark (Optional)</label>' +
+                '<input id="swal-landmark" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Near Temple / School">' +
                 '<label class="text-[10px] font-black text-slate-400 uppercase">City</label>' +
                 '<input id="swal-city" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="Town / City">' +
+                '<label class="text-[10px] font-black text-slate-400 uppercase">State</label>' +
+                '<input id="swal-state" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="State">' +
                 '<label class="text-[10px] font-black text-slate-400 uppercase">Pincode</label>' +
                 '<input id="swal-pincode" class="swal2-input !mt-1 !mb-4 !w-full !mx-0" placeholder="6-digit Pincode">' +
                 '</div>',
@@ -42,14 +46,16 @@ export default function ProfilePage() {
                 const phone = (document.getElementById('swal-phone') as HTMLInputElement).value;
                 const house = (document.getElementById('swal-house') as HTMLInputElement).value;
                 const street = (document.getElementById('swal-street') as HTMLInputElement).value;
+                const landmark = (document.getElementById('swal-landmark') as HTMLInputElement).value;
                 const city = (document.getElementById('swal-city') as HTMLInputElement).value;
+                const state = (document.getElementById('swal-state') as HTMLInputElement).value;
                 const pincode = (document.getElementById('swal-pincode') as HTMLInputElement).value;
 
-                if (!label || !name || !phone || !house || !street || !city || !pincode) {
+                if (!label || !name || !phone || !house || !street || !city || !state || !pincode) {
                     Swal.showValidationMessage('Please fill all critical coordinates');
                     return false;
                 }
-                return { label, name, phone, house, street, city, pincode };
+                return { label, name, phone, house, street, landmark, city, state, pincode };
             }
         });
 
@@ -61,7 +67,9 @@ export default function ProfilePage() {
                     mobile_number: formValues.phone,
                     house_info: formValues.house,
                     street_info: formValues.street,
+                    landmark: formValues.landmark,
                     city: formValues.city,
+                    state: formValues.state,
                     pincode: formValues.pincode,
                     email: user.email, // fallback
                     country_region: 'India'

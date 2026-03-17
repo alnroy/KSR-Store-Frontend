@@ -115,19 +115,44 @@ export default function CheckoutPage() {
     const handleLocateOnMap = () => {
         setIsLocating(true);
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(() => {
-                Swal.fire({
-                    title: 'Precision GPS Ready',
-                    text: 'In production, this would open full Google Maps picker. Your coords are active.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                setIsLocating(false);
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    // Using OpenStreetMap Nominatim for free reverse geocoding
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
+                    const data = await res.json();
+                    
+                    if (data && data.address) {
+                        const addr = data.address;
+                        setFormData(prev => ({
+                            ...prev,
+                            pincode: addr.postcode || prev.pincode,
+                            city: addr.city || addr.town || addr.village || prev.city,
+                            state: addr.state || prev.state,
+                            street_info: addr.road || addr.suburb || prev.street_info,
+                        }));
+
+                        Swal.fire({
+                            title: 'Coordinates Locked ⚓',
+                            text: `Auto-filled details for ${addr.city || addr.town || 'your location'}.`,
+                            icon: 'success',
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                    }
+                } catch (error) {
+                    console.error("Geocoding failed", error);
+                    Swal.fire('Partial Lock', 'GPS active, but could not resolve address names.', 'info');
+                } finally {
+                    setIsLocating(false);
+                }
             }, () => {
-                Swal.fire('Error', 'GPS Access Denied.', 'error');
+                Swal.fire('GPS Blocked', 'Please enable location permissions in your browser.', 'error');
                 setIsLocating(false);
             });
+        } else {
+            Swal.fire('Unsupported', 'Your browser does not support Geolocation.', 'error');
+            setIsLocating(false);
         }
     };
 

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CartContext } from '@/context/CartContext';
 import { AuthContext } from '@/context/AuthContext';
-import { Heart, Search, X, Star, ShoppingCart, Zap, Filter, ArrowRight, ArrowLeft, Anchor } from 'lucide-react';
+import { Heart, Search, X, Star, ShoppingCart, Zap, Filter, ArrowRight, ArrowLeft, Anchor, MoreVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { WishlistContext } from '@/context/WishlistContext';
@@ -238,7 +238,7 @@ function HomeContent() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, user } = useContext(AuthContext);
 
   // Hero Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -415,6 +415,41 @@ function HomeContent() {
       }
     } finally {
       setIsSubmittingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: number) => {
+    const result = await Swal.fire({
+      title: 'Delete Report?',
+      text: "Are you sure you want to remove this catch report? This cannot be undone.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Confirm Disposal ⚓',
+      background: '#ffffff',
+      color: '#0f172a'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const token = localStorage.getItem('access_token');
+        await axios.delete(`https://alnroy.pythonanywhere.com/api/reviews/${reviewId}/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        Swal.fire({ icon: 'success', title: 'Removed', text: 'Report successfully discarded.', timer: 1500, showConfirmButton: false });
+
+        if (selectedProduct) {
+          const updatedReviews = selectedProduct.reviews.filter((r: any) => r.id !== reviewId);
+          const updatedProduct = { ...selectedProduct, reviews: updatedReviews };
+          setSelectedProduct(updatedProduct);
+          
+          setProducts(prev => prev.map(p => p.id === selectedProduct.id ? updatedProduct : p));
+        }
+      } catch (error) {
+        Swal.fire('Error', 'Failed to discard the report.', 'error');
+      }
     }
   };
 
@@ -878,7 +913,24 @@ function HomeContent() {
                               </div>
                               <span className="font-black text-slate-900">{rev.user_name}</span>
                             </div>
-                            <span className="text-amber-400 text-sm tracking-tighter">{'★'.repeat(rev.rating)}</span>
+                             <div className="flex items-center gap-2">
+                                <span className="text-amber-400 text-sm tracking-tighter">{'★'.repeat(rev.rating)}</span>
+                                {(user?.id === rev.user || user?.is_staff) && (
+                                  <div className="relative group/menu">
+                                    <button className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-red-500">
+                                      <MoreVertical size={16} />
+                                    </button>
+                                    <div className="absolute right-0 top-full mt-1 bg-white border border-slate-100 shadow-xl rounded-xl py-2 px-2 hidden group-hover/menu:block z-50 min-w-[120px]">
+                                      <button 
+                                        onClick={() => handleDeleteReview(rev.id)}
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                      >
+                                        <Trash2 size={12} /> Delete Report
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                           </div>
                           <p className="text-slate-600 italic leading-relaxed">&ldquo;{rev.comment}&rdquo;</p>
                         </div>

@@ -26,10 +26,10 @@ function RandomProductSlideshow({ products, onSelect }: { products: any[], onSel
   return (
     <div 
         onClick={() => onSelect(p)}
-        className="my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[500px] md:h-[550px] flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5"
+        className="my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[600px] md:h-[550px] flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5"
     >
         {/* DYNAMIC BACKGROUND ZOOM (Ken Burns Effect) */}
-        <div key={`bg-${index}`} className="absolute inset-0 z-0 overflow-hidden">
+        <div key={`bg-${index}`} className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <img 
                 src={p.image} 
                 className="w-full h-full object-cover blur-3xl opacity-20 animate-ken-burns" 
@@ -39,10 +39,26 @@ function RandomProductSlideshow({ products, onSelect }: { products: any[], onSel
         </div>
 
         {/* CONTENT GRID */}
-        <div className="relative z-10 w-full flex flex-col md:flex-row items-center justify-center px-8 md:px-20 gap-8 md:gap-12 py-12 md:py-0">
+        <div className="relative z-20 w-full flex flex-col md:flex-row items-center justify-center px-8 md:px-20 gap-8 md:gap-12 py-16 md:py-0">
             
+            {/* PRODUCT IMAGE (ZOOM & FLOAT) */}
+            <div className="w-full flex items-center justify-center order-1 md:order-2 mb-4 md:mb-0">
+                <div 
+                    key={`img-cont-${index}`} 
+                    className="relative w-full max-w-[260px] md:max-w-[450px] aspect-square flex items-center justify-center bg-white/5 rounded-full animate-in fade-in duration-700 p-6 z-30"
+                >
+                    <img 
+                        src={p.image || '/insta_logo.jpg'} 
+                        className="max-w-full max-h-full object-contain drop-shadow-2xl transition-all duration-700 hover:scale-105 z-40 relative" 
+                        alt={p.name} 
+                    />
+                    {/* Shadow underneath */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-black/40 blur-3xl rounded-full -z-10 animate-pulse"></div>
+                </div>
+            </div>
+
             {/* TEXT CONTENT */}
-            <div className="flex-1 flex flex-col justify-center text-center md:text-left order-2 md:order-1">
+            <div className="flex-1 flex flex-col justify-center text-center md:text-left order-2 md:order-1 z-30">
                 <div key={`tag-${index}`} className="inline-flex items-center gap-2 bg-blue-500/10 backdrop-blur-md border border-blue-500/20 px-4 py-1.5 rounded-full mb-6 w-fit mx-auto md:mx-0 animate-in fade-in slide-in-from-left-4 duration-700">
                     <Zap className="text-blue-400 w-3.5 h-3.5 fill-blue-400" />
                     <span className="text-blue-400 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em]">Premium Spotlight Gear</span>

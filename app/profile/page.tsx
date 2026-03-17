@@ -162,22 +162,30 @@ export default function ProfilePage() {
                 {/* LEFT COLUMN: Identity & Intel (4 cols) */}
                 <div className="lg:col-span-4 space-y-8">
                     {/* User Identity Card */}
-                    <div className="bg-slate-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                    <div className="bg-slate-900 text-white p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
                         
                         <div className="relative z-10">
-                            <div className="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center text-3xl font-black mb-6 shadow-xl border-4 border-white/5">
+                            <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-600 rounded-2xl md:rounded-[2rem] flex items-center justify-center text-2xl md:text-3xl font-black mb-6 shadow-xl border-4 border-white/5">
                                 {user?.username ? user.username.charAt(0).toUpperCase() : '👤'}
                             </div>
-                            <h2 className="text-3xl font-black mb-2 italic tracking-tight">{user?.username || 'Angler'}</h2>
-                            <p className="text-slate-400 font-bold text-sm mb-4 flex items-center gap-2"><Mail size={14} /> {user?.email}</p>
+                            <h2 className="text-2xl md:text-3xl font-black mb-2 italic tracking-tight truncate" title={user?.username || 'Angler'}>
+                                {user?.username || 'Angler'}
+                            </h2>
+                            <p className="text-slate-400 font-bold text-xs md:text-sm mb-4 flex items-center gap-2 overflow-hidden">
+                                <Mail size={14} className="shrink-0" /> 
+                                <span className="truncate" title={user?.email}>{user?.email}</span>
+                            </p>
                             {user?.mobile && (
-                                <p className="text-blue-400 font-bold text-sm mb-8 flex items-center gap-2"><Phone size={14} /> {user.mobile}</p>
+                                <p className="text-blue-400 font-bold text-xs md:text-sm mb-8 flex items-center gap-2 overflow-hidden">
+                                    <Phone size={14} className="shrink-0" /> 
+                                    <span className="truncate">{user.mobile}</span>
+                                </p>
                             )}
 
                             <div className="flex flex-wrap gap-3">
                                 {user?.is_staff && (
-                                    <span className="bg-red-500/10 text-red-500 text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-red-500/20 flex items-center gap-1">
+                                    <span className="bg-red-500/10 text-red-500 text-[8px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-red-500/20 flex items-center gap-1">
                                         <ShieldCheck size={10} /> Fleet Administrator
                                     </span>
                                 )}
@@ -206,16 +214,16 @@ export default function ProfilePage() {
 
                 {/* RIGHT COLUMN: The Address Dock (8 cols) */}
                 <div className="lg:col-span-8">
-                    <div className="bg-white rounded-[3rem] border border-slate-100 p-8 md:p-12 shadow-sm h-full">
-                        <div className="flex items-center justify-between mb-12">
+                    <div className="bg-white rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 p-6 md:p-12 shadow-sm h-full">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6">
                             <div>
-                                <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3 italic mb-2">
+                                <h2 className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3 italic mb-2">
                                     Saved <span className="text-blue-600 not-italic">Docks</span>
                                 </h2>
-                                <p className="text-xs font-bold text-slate-400">Manage your frequent delivery locations</p>
+                                <p className="text-[10px] md:text-xs font-bold text-slate-400">Manage your frequent delivery locations</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="bg-blue-50 text-blue-700 px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest">
+                            <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+                                <div className="bg-blue-50 text-blue-700 px-4 md:px-6 py-2 md:py-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest">
                                     {addresses.length} Active
                                 </div>
                                 <button onClick={handleAddAddress} className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-500 transition-all shadow-lg shadow-blue-200">
@@ -225,32 +233,33 @@ export default function ProfilePage() {
                         </div>
 
                         {addresses.length === 0 ? (
-                            <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-100">
+                            <div className="text-center py-16 md:py-20 bg-slate-50 rounded-[2.5rem] md:rounded-[3rem] border-2 border-dashed border-slate-100">
                                 <MapPin size={48} className="text-slate-200 mx-auto mb-6" />
                                 <p className="text-slate-500 font-black text-sm uppercase tracking-widest mb-2">Zero Docks Identified</p>
-                                <p className="text-[10px] text-slate-400 font-bold max-w-xs mx-auto">Your delivery addresses will be automatically cached here after your next shopping trip.</p>
+                                <p className="text-[10px] text-slate-400 font-bold max-w-xs mx-auto px-6">Your delivery addresses will be automatically cached here after your next shopping trip.</p>
                                 <button onClick={() => router.push('/')} className="mt-8 bg-slate-900 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Start Fishing</button>
                             </div>
                         ) : (
-                            <div className="grid md:grid-cols-2 gap-6">
+                            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                                 {addresses.map((addr) => (
-                                    <div key={addr.id} className="p-8 rounded-[2.5rem] border-2 border-slate-50 bg-slate-50 hover:border-blue-200 hover:bg-white transition-all flex flex-col justify-between group relative overflow-hidden">
+                                    <div key={addr.id} className="p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-2 border-slate-50 bg-slate-50 hover:border-blue-200 hover:bg-white transition-all flex flex-col justify-between group relative overflow-hidden">
                                         {addr.is_default && (
                                             <div className="absolute top-0 right-0 bg-blue-600 text-white px-4 py-1.5 rounded-bl-2xl text-[8px] font-black uppercase tracking-widest">Default</div>
                                         )}
                                         
-                                        <div>
+                                        <div className="overflow-hidden">
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center shadow-sm text-blue-600">
                                                     {addr.address_label?.toLowerCase().includes('office') ? <Briefcase size={18} /> : <Home size={18} />}
                                                 </div>
-                                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-lg">
+                                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-lg truncate max-w-[100px]">
                                                     {addr.address_label || 'Home'}
                                                 </span>
                                             </div>
-                                            <p className="font-black text-slate-900 text-lg mb-1">{addr.full_name}</p>
-                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-6 flex items-center gap-1">
-                                                <Phone size={10} /> {addr.mobile_number || 'No contact saved'}
+                                            <p className="font-black text-slate-900 text-lg mb-1 truncate" title={addr.full_name}>{addr.full_name}</p>
+                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-6 flex items-center gap-1 overflow-hidden">
+                                                <Phone size={10} className="shrink-0" /> 
+                                                <span className="truncate">{addr.mobile_number || 'No contact saved'}</span>
                                             </p>
                                             
                                             <div className="space-y-4 text-xs font-bold text-slate-600">

@@ -26,18 +26,70 @@ function RandomProductSlideshow({ products, onSelect }: { products: any[], onSel
   return (
     <div 
         onClick={() => onSelect(p)}
-        className="my-16 bg-slate-900 rounded-[2.5rem] overflow-hidden relative h-[250px] md:h-[400px] cursor-pointer group shadow-2xl transition-all active:scale-[0.99]"
+        className="my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[500px] md:h-[550px] flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5"
     >
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-slate-900/40 z-10"></div>
-        <img src={p.image} className="w-full h-full object-cover transition-transform duration-[5000ms] group-hover:scale-110" alt={p.name} />
-        <div className="absolute inset-y-0 left-0 z-20 flex flex-col justify-center p-8 md:p-16 max-w-xl">
-            <span className="bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.3em] px-3 py-1 rounded-full w-fit mb-4">Spotlight Gear</span>
-            <h3 className="text-2xl md:text-5xl font-black text-white mb-2 leading-tight drop-shadow-lg">{p.name}</h3>
-            <p className="text-blue-400 text-xl md:text-2xl font-black">₹{p.offer_price || p.price}</p>
+        {/* DYNAMIC BACKGROUND ZOOM (Ken Burns Effect) */}
+        <div key={`bg-${index}`} className="absolute inset-0 z-0 overflow-hidden">
+            <img 
+                src={p.image} 
+                className="w-full h-full object-cover blur-3xl opacity-20 animate-ken-burns" 
+                alt="" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950/80 to-transparent"></div>
         </div>
-        <div className="absolute bottom-6 right-8 z-20 flex gap-2">
+
+        {/* CONTENT GRID */}
+        <div className="relative z-10 w-full flex flex-col md:flex-row items-center justify-center px-8 md:px-20 gap-8 md:gap-12 py-12 md:py-0">
+            
+            {/* TEXT CONTENT */}
+            <div className="flex-1 flex flex-col justify-center text-center md:text-left order-2 md:order-1">
+                <div key={`tag-${index}`} className="inline-flex items-center gap-2 bg-blue-500/10 backdrop-blur-md border border-blue-500/20 px-4 py-1.5 rounded-full mb-6 w-fit mx-auto md:mx-0 animate-in fade-in slide-in-from-left-4 duration-700">
+                    <Zap className="text-blue-400 w-3.5 h-3.5 fill-blue-400" />
+                    <span className="text-blue-400 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em]">Premium Spotlight Gear</span>
+                </div>
+                
+                <h3 key={`name-${index}`} className="text-3xl md:text-7xl font-black text-white mb-4 md:mb-6 leading-[0.9] tracking-tighter uppercase italic animate-in fade-in slide-in-from-left-8 duration-700 delay-100">
+                    {p.name}
+                </h3>
+                
+                <div key={`price-${index}`} className="flex items-center gap-4 md:gap-6 justify-center md:justify-start animate-in fade-in slide-in-from-left-12 duration-700 delay-200">
+                    <p className="text-blue-500 text-2xl md:text-5xl font-black italic">₹{p.offer_price || p.price}</p>
+                    {p.offer_price && (
+                        <p className="text-slate-500 text-lg md:text-xl line-through font-bold">₹{p.price}</p>
+                    )}
+                </div>
+
+                <div className="mt-8 md:mt-12 hidden md:block animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                    <button className="bg-white text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-2xl hover:scale-105 active:scale-95">
+                        Claim This Gear →
+                    </button>
+                </div>
+            </div>
+
+            {/* PRODUCT IMAGE (ZOOM & FLOAT) */}
+            <div className="flex-1 w-full flex items-center justify-center order-1 md:order-2">
+                <div 
+                    key={`img-cont-${index}`} 
+                    className="relative w-full max-w-[280px] md:max-w-[500px] aspect-square flex items-center justify-center bg-white/5 rounded-full animate-in fade-in duration-700 p-6"
+                >
+                    <img 
+                        src={p.image || '/insta_logo.jpg'} 
+                        className="max-w-full max-h-full object-contain drop-shadow-2xl transition-all duration-700 hover:scale-105" 
+                        alt={p.name} 
+                    />
+                    {/* Shadow underneath */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-black/40 blur-3xl rounded-full -z-10 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+
+        {/* PROGRESS INDICATORS */}
+        <div className="absolute bottom-10 left-0 right-0 z-30 flex justify-center gap-3">
             {products.map((_, i) => (
-                <div key={i} className={`h-1.5 rounded-full transition-all ${i === index ? 'bg-blue-500 w-8' : 'bg-white/20 w-3'}`} />
+                <div 
+                    key={i} 
+                    className={`h-1.5 rounded-full transition-all duration-700 ${i === index ? 'bg-blue-500 w-16 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/10 w-4 hover:bg-white/20'}`} 
+                />
             ))}
         </div>
     </div>

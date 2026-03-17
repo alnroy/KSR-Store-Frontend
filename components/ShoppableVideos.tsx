@@ -79,8 +79,8 @@ export default function ShoppableVideos({ onProductSelect }: { onProductSelect: 
                         {/* Overlay Gradient - Added pointer-events-none so it doesn't block clicks to the video */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-                        {/* Product Tag */}
-                        <div className="absolute bottom-6 left-6 right-6 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 z-10">
+                        {/* Product Tag - Made always visible for better UX */}
+                        <div className="absolute bottom-6 left-6 right-6 translate-y-0 opacity-100 transition-all duration-500 z-10">
                             <button 
                                 onClick={(e) => {
                                     e.stopPropagation(); // Prevent video play/pause when clicking the shop button

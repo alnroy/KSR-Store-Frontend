@@ -63,8 +63,16 @@ export default function Navbar() {
             </button>
 
             {/* LOGO */}
-            <Link href="/" className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter text-blue-400 shrink-0 italic">
-              KSR &nbsp;<span className="text-white not-italic">BAIT & TACKLE</span>
+            <Link href="/" className="flex items-center gap-2 group">
+              <img 
+                src="/insta_logo.jpg" 
+                alt="KSR Logo" 
+                className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border-2 border-blue-500/30 group-hover:border-blue-500 transition-all shadow-lg"
+              />
+              <div className="flex flex-col">
+                <span className="text-lg md:text-xl font-black tracking-tighter text-blue-400 italic leading-none">KSR</span>
+                <span className="text-[10px] md:text-xs font-bold text-white tracking-widest leading-none">BAIT & TACKLE</span>
+              </div>
             </Link>
           </div>
 
@@ -176,7 +184,7 @@ export default function Navbar() {
       <SidebarMenu isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       {/* --- 4. OFFICIAL WHATSAPP FLOATING BUTTON --- */}
       <a
-        href="https://wa.me/917511136171?text=Hi%20KSR%20Bait%20%26%20Tackle,%20I'm%20interested%20in%20some%20fishing%20gear!"
+        href="https://wa.me/919778796424?text=Hi%20KSR%20Bait%20%26%20Tackle,%20I'm%20interested%20in%20some%20fishing%20gear!"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-8 right-8 z-[100] bg-[#25D366] text-white w-16 h-16 rounded-full shadow-[0_10px_40px_rgba(37,211,102,0.4)] flex items-center justify-center hover:scale-110 transition-all active:scale-95 group"

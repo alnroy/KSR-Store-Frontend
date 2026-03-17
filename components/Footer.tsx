@@ -12,7 +12,7 @@ interface BrandEntry {
 }
 
 export default function Footer() {
-    const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Ksr+Aqua+World+Thirunalloor+Kerala+688541&query_place_id=ChIJ43QfzrJ7CDsRJIz2eKSKUEk";
+    const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Ksr+Aqua+World+Cherthala-Arookutty+Rd,+near+Chenganda+Bridge,+Kerala+688541&query_place_id=ChIJ43QfzrJ7CDsRJIz2eKSKUEk";
     const router = useRouter();
     const [brands, setBrands] = useState<BrandEntry[]>([]);
     const marqueeRef = useRef<HTMLDivElement>(null);
@@ -189,9 +189,16 @@ export default function Footer() {
             {/* ===== FOOTER COLUMNS ===== */}
             <div className="max-w-[1500px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 px-4 md:px-8">
                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-white">
-                        <Fish className="text-blue-500" size={32} />
-                        <span className="text-2xl font-black tracking-tighter uppercase">KSR Bait & Tackle</span>
+                    <div className="flex items-center gap-3 text-white">
+                        <img 
+                            src="/insta_logo.jpg" 
+                            alt="KSR Logo" 
+                            className="w-12 h-12 rounded-full border-2 border-blue-500/30 object-cover"
+                        />
+                        <div className="flex flex-col">
+                            <span className="text-2xl font-black tracking-tighter uppercase leading-none">KSR Bait & Tackle</span>
+                            <span className="text-[10px] font-bold text-blue-500 tracking-[0.3em] uppercase">Premium Aquatic Hub</span>
+                        </div>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-400">
                         Premium tackle and gear for the modern angler. Owned and managed by <span className="text-white font-bold">Sajeevan</span>.
@@ -202,6 +209,7 @@ export default function Footer() {
                     <h4 className="text-white font-bold mb-6 uppercase tracking-widest text-xs">Navigation</h4>
                     <ul className="space-y-4 text-sm font-medium">
                         <li><Link href="/" className="hover:text-blue-400 transition">Shop Home</Link></li>
+                        <li><Link href="/store-info" className="hover:text-blue-400 transition">Store Information</Link></li>
                         <li><a href="/my-orders" onClick={(e) => handleProtectedLink(e, '/my-orders')} className="hover:text-blue-400 transition">Order History</a></li>
                         <li><a href="/profile" onClick={(e) => handleProtectedLink(e, '/profile')} className="hover:text-blue-400 transition">My Account</a></li>
                         <li><Link href="/contact" className="hover:text-blue-400 transition">Support</Link></li>
@@ -214,15 +222,15 @@ export default function Footer() {
                         <div className="flex gap-4">
                             <MapPin className="text-blue-500 shrink-0" size={20} />
                             <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-sm leading-relaxed hover:text-white transition">
-                                KSR Bait & Tackle,<br />Thirunalloor, Kerala 688541
+                                KSR Bait & Tackle,<br />Cherthala-Arookutty Rd, Kerala 688541
                             </a>
                         </div>
                         <div className="space-y-3">
-                            <a href="tel:7511136171" className="flex items-center gap-4 text-sm hover:text-white transition">
-                                <Phone className="text-blue-500" size={18} /> 7511136171
+                            <a href="tel:9778796424" className="flex items-center gap-4 text-sm hover:text-white transition">
+                                <Phone className="text-blue-500" size={18} /> 9778796424
                             </a>
-                            <a href="mailto:alanroyff101@gmail.com" className="flex items-center gap-4 text-sm hover:text-white transition underline decoration-blue-500/50">
-                                <Mail className="text-blue-500" size={18} /> alanroyff101@gmail.com
+                            <a href="mailto:ksraquaworld@gmail.com" className="flex items-center gap-4 text-sm hover:text-white transition underline decoration-blue-500/50">
+                                <Mail className="text-blue-500" size={18} /> ksraquaworld@gmail.com
                             </a>
                         </div>
                     </div>

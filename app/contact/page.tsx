@@ -2,7 +2,7 @@
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function ContactPage() {
-    const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Ksr+Aqua+World+Thirunalloor+Kerala+688541&query_place_id=ChIJ43QfzrJ7CDsRJIz2eKSKUEk";
+    const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Ksr+Aqua+World+Cherthala-Arookutty+Rd,+near+Chenganda+Bridge,+Kerala+688541&query_place_id=ChIJ43QfzrJ7CDsRJIz2eKSKUEk";
 
     return (
         <div className="max-w-6xl mx-auto py-20 px-4">
@@ -19,7 +19,7 @@ export default function ContactPage() {
                     </div>
                     <h3 className="font-black text-xl text-slate-900 mb-3">Call Support</h3>
                     <p className="text-slate-500 text-sm mb-6">Direct line for quick help.</p>
-                    <a href="tel:7511136171" className="text-2xl font-black text-slate-900 hover:text-blue-600 transition">7511136171</a>
+                    <a href="tel:9778796424" className="text-2xl font-black text-slate-900 hover:text-blue-600 transition">9778796424</a>
                 </div>
 
                 {/* Email */}
@@ -29,7 +29,7 @@ export default function ContactPage() {
                     </div>
                     <h3 className="font-black text-xl text-slate-900 mb-3">Email Us</h3>
                     <p className="text-slate-500 text-sm mb-6">For detailed order inquiries.</p>
-                    <a href="mailto:alanroyff101@gmail.com" className="text-sm font-bold text-blue-600 underline">alanroyff101@gmail.com</a>
+                    <a href="mailto:ksraquaworld@gmail.com" className="text-sm font-bold text-blue-600 underline">ksraquaworld@gmail.com</a>
                 </div>
 
                 {/* Location with Google Maps Link */}
@@ -43,7 +43,7 @@ export default function ContactPage() {
                         <MapPin size={28} />
                     </div>
                     <h3 className="font-black text-xl text-slate-900 mb-3">Visit Store</h3>
-                    <p className="text-slate-500 text-sm mb-4">Thirunalloor, Kerala 688541</p>
+                    <p className="text-slate-500 text-sm mb-4">Cherthala-Arookutty Rd, near Chenganda Bridge, Kerala 688541</p>
                     <p className="font-black text-slate-900 mb-2">KSR Bait & Tackle</p>
                     <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest">Get Directions →</span>
                 </a>

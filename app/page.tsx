@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState, useContext, Suspense } from 'react';
+import React, { useEffect, useState, useContext, Suspense, useMemo } from 'react';
 import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CartContext } from '@/context/CartContext';
@@ -58,7 +58,7 @@ function RandomProductSlideshow({ products, onSelect, variant = 'card' }: { prod
     if (displayProducts.length <= 1) return;
     const interval = setInterval(() => {
       setIndex(prev => (prev + 1) % displayProducts.length);
-    }, 4000);
+    }, 7000); // Slower speed: 7 seconds
     return () => clearInterval(interval);
   }, [displayProducts.length]);
 
@@ -67,7 +67,7 @@ function RandomProductSlideshow({ products, onSelect, variant = 'card' }: { prod
 
   const containerClasses = variant === 'hero' 
     ? "relative w-full min-h-[450px] md:h-[550px] bg-slate-950 flex flex-col items-center justify-center cursor-pointer overflow-hidden border-none rounded-none mb-0"
-    : "my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[600px] md:h-[550px] flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5";
+    : "my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[500px] md:min-h-[550px] h-auto flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5";
 
   return (
     <div 
@@ -163,8 +163,8 @@ function RandomProductSlideshow({ products, onSelect, variant = 'card' }: { prod
                         )}
                     </div>
 
-                    <div className="mt-8 md:mt-12 hidden md:block animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-                        <button className="bg-white text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-2xl hover:scale-105 active:scale-95">
+                    <div className="mt-8 md:mt-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                        <button className="bg-white text-slate-950 px-8 md:px-10 py-4 md:py-5 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-2xl hover:scale-105 active:scale-95">
                             Claim This Gear →
                         </button>
                     </div>
@@ -418,16 +418,13 @@ function HomeContent() {
     }
   };
 
-  const marqueeProducts = products.filter((p: any) => p.is_hero_marquee);
-  const heroProducts = marqueeProducts.length >= 3 ? marqueeProducts : products.slice(0, 8);
-
-  useEffect(() => {
-    if (heroProducts.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroProducts.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [heroProducts.length]);
+  const marqueeProducts = useMemo(() => products.filter((p: any) => p.is_hero_marquee), [products]);
+  const heroProducts = useMemo(() => marqueeProducts.length >= 3 ? marqueeProducts : products.slice(0, 10), [marqueeProducts, products]);
+  
+  const remainingProducts = useMemo(() => products.filter(p => !heroProducts.some(h => h.id === p.id)), [products, heroProducts]);
+  // Split remaining products into two pools for different breaks to ensure ZERO repetition
+  const break1Pool = useMemo(() => remainingProducts.slice(0, Math.ceil(remainingProducts.length / 2)), [remainingProducts]);
+  const breakLoopPool = useMemo(() => remainingProducts.slice(Math.ceil(remainingProducts.length / 2)), [remainingProducts]);
 
   const handleCategoryClick = (cat: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -586,9 +583,9 @@ function HomeContent() {
                </div>
             </div>
 
-            {/* Random Slideshow Break 1: BUDGET PICKS (Under 2000) */}
+            {/* Random Slideshow Break 1: UNIQUE SPOTLIGHT (Excluding Hero & Loop items) */}
             <RandomProductSlideshow 
-                products={products.filter(p => (parseFloat(p.offer_price || p.price)) <= 2000 && !p.is_hero_marquee)} 
+                products={break1Pool} 
                 onSelect={(p) => { setSelectedProduct(p); setSelectedOptions({}); }}
             />
 
@@ -616,10 +613,10 @@ function HomeContent() {
                   isInWishlist={isInWishlist}
                 />
                 
-                {/* Insert another slideshow after every 3 categories: HIGH RATED (Excluding category context) */}
+                {/* Insert another slideshow after every 3 categories: DIVERSE SELECTION (Final Pool) */}
                 {idx % 3 === 2 && (
                     <RandomProductSlideshow 
-                        products={products.filter(p => p.average_rating >= 4.5 && p.category_name !== cat && !p.is_hero_marquee)} 
+                        products={breakLoopPool.filter(p => p.category_name !== cat)} 
                         onSelect={(p) => { setSelectedProduct(p); setSelectedOptions({}); }}
                     />
                 )}

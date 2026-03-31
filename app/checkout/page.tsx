@@ -118,28 +118,47 @@ export default function CheckoutPage() {
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const { latitude, longitude } = position.coords;
                 try {
-                    // Using OpenStreetMap Nominatim for free reverse geocoding
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
-                    const data = await res.json();
-                    
-                    if (data && data.address) {
-                        const addr = data.address;
-                        setFormData(prev => ({
-                            ...prev,
-                            pincode: addr.postcode || prev.pincode,
-                            city: addr.city || addr.town || addr.village || prev.city,
-                            state: addr.state || prev.state,
-                            street_info: addr.road || addr.suburb || prev.street_info,
-                        }));
-
-                        Swal.fire({
-                            title: 'Coordinates Locked ⚓',
-                            text: `Auto-filled details for ${addr.city || addr.town || 'your location'}.`,
-                            icon: 'success',
-                            timer: 2500,
-                            showConfirmButton: false
-                        });
+                    // ⚓ GOOGLE MAPS OPTION (If API Key is provided in future)
+                    const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
+                    if (GOOGLE_API_KEY) {
+                        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`);
+                        const data = await res.json();
+                        if (data.results && data.results[0]) {
+                            const components = data.results[0].address_components;
+                            const getComponent = (type: string) => components.find((c: any) => c.types.includes(type))?.long_name || '';
+                            
+                            setFormData(prev => ({
+                                ...prev,
+                                pincode: getComponent('postal_code') || prev.pincode,
+                                city: getComponent('locality') || getComponent('administrative_area_level_2') || prev.city,
+                                state: getComponent('administrative_area_level_1') || prev.state,
+                                street_info: getComponent('route') || getComponent('sublocality') || prev.street_info,
+                            }));
+                        }
+                    } else {
+                        // 🌍 FREE OPENSTREETMAP FALLBACK (Nominatim)
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
+                        const data = await res.json();
+                        
+                        if (data && data.address) {
+                            const addr = data.address;
+                            setFormData(prev => ({
+                                ...prev,
+                                pincode: addr.postcode || prev.pincode,
+                                city: addr.city || addr.town || addr.village || prev.city,
+                                state: addr.state || prev.state,
+                                street_info: addr.road || addr.suburb || prev.street_info,
+                            }));
+                        }
                     }
+
+                    Swal.fire({
+                        title: 'Coordinates Locked ⚓',
+                        text: 'Location details auto-filled successfully.',
+                        icon: 'success',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
                 } catch (error) {
                     console.error("Geocoding failed", error);
                     Swal.fire('Partial Lock', 'GPS active, but could not resolve address names.', 'info');

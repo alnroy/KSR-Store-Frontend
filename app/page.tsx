@@ -836,7 +836,6 @@ function HomeContent() {
                           }]));
 
                           if (!isLoggedIn) {
-                            setSelectedProduct(null);
                             router.push('/login?redirect=checkout&message=login_required');
                           } else {
                             router.push('/checkout');

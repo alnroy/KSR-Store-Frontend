@@ -49,6 +49,11 @@ export const metadata = {
   verification: {
     google: 'ENTER-YOUR-GOOGLE-VERIFICATION-CODE-HERE',
   },
+  icons: {
+    icon: '/insta_logo.jpg',
+    apple: '/insta_logo.jpg',
+    shortcut: '/insta_logo.jpg',
+  },
   robots: {
     index: true,
     follow: true,

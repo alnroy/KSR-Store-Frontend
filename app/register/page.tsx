@@ -58,7 +58,7 @@ export default function RegisterPage() {
             });
 
             // Transition to OTP step
-            setSuccessMessage('Registration initiated! Please check your email for the 6-digit OTP.');
+            setSuccessMessage('Registration initiated! Please check your email (Spam folder too) for the 6-digit OTP.');
             setStep(2);
         } catch (err: any) {
             console.error(err);

@@ -6,12 +6,15 @@ import Link from 'next/link';
 import { AuthContext } from '@/context/AuthContext'; // 2. Imported AuthContext
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+
 
 function LoginContent() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
     const redirect = searchParams.get('redirect');
@@ -50,7 +53,16 @@ function LoginContent() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 relative pt-20">
+            {/* Back to Dashboard Button */}
+            <Link 
+                href="/" 
+                className="absolute top-8 left-8 flex items-center gap-2 text-slate-600 hover:text-blue-600 font-bold transition-all bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100"
+            >
+                <ArrowLeft size={18} />
+                Back to Dashboard
+            </Link>
+
             <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-black text-slate-900">Welcome Back</h1>
@@ -84,14 +96,23 @@ function LoginContent() {
                     </div>
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
-                        <input
-                            suppressHydrationWarning
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-                            required
-                        />
+                        <div className="relative">
+                            <input
+                                suppressHydrationWarning
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition pr-12"
+                                required
+                            />
+                            <button 
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
                     </div>
 
                     <button

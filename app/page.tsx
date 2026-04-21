@@ -54,24 +54,62 @@ function RandomProductSlideshow({ products, onSelect, variant = 'card' }: { prod
     setIndex(0);
   }, [products]);
 
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const nextSlide = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (displayProducts.length === 0) return;
+    setIndex(prev => (prev + 1) % displayProducts.length);
+  };
+
+  const prevSlide = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (displayProducts.length === 0) return;
+    setIndex(prev => (prev - 1 + displayProducts.length) % displayProducts.length);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+
+    if (distance > minSwipeDistance) nextSlide();
+    if (distance < -minSwipeDistance) prevSlide();
+
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
   useEffect(() => {
     if (displayProducts.length <= 1) return;
     const interval = setInterval(() => {
       setIndex(prev => (prev + 1) % displayProducts.length);
     }, 7000); // Slower speed: 7 seconds
     return () => clearInterval(interval);
-  }, [displayProducts.length]);
+  }, [displayProducts.length, index]); // Reset timer on index change
 
   if (displayProducts.length === 0) return null;
   const p = displayProducts[index];
 
   const containerClasses = variant === 'hero' 
-    ? "relative w-full min-h-[450px] md:h-[550px] bg-slate-950 flex flex-col items-center justify-center cursor-pointer overflow-hidden border-none rounded-none mb-0"
-    : "my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[500px] md:min-h-[550px] h-auto flex flex-col items-center justify-center cursor-pointer group shadow-2xl transition-all active:scale-[0.98] border border-white/5";
+    ? "relative w-full min-h-[450px] md:h-[550px] bg-slate-950 flex flex-col items-center justify-center cursor-pointer overflow-hidden border-none rounded-none mb-0 group/slideshow"
+    : "my-16 bg-slate-950 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden relative min-h-[500px] md:min-h-[550px] h-auto flex flex-col items-center justify-center cursor-pointer shadow-2xl transition-all active:scale-[0.98] border border-white/5 group/slideshow";
 
   return (
     <div 
         onClick={() => onSelect(p)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         className={containerClasses}
     >
         {/* CINEMATIC BACKGROUND */}
@@ -87,6 +125,22 @@ function RandomProductSlideshow({ products, onSelect, variant = 'card' }: { prod
                 ? <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/20 to-slate-950/80"></div>
                 : <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950/80 to-transparent"></div>
             }
+        </div>
+
+        {/* NAVIGATION BUTTONS */}
+        <div className="absolute inset-x-4 md:inset-x-8 top-1/2 -translate-y-1/2 z-50 flex justify-between pointer-events-none opacity-0 group-hover/slideshow:opacity-100 transition-opacity duration-300">
+            <button 
+                onClick={prevSlide}
+                className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-slate-950 transition-all pointer-events-auto active:scale-95"
+            >
+                <ArrowLeft size={24} />
+            </button>
+            <button 
+                onClick={nextSlide}
+                className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white hover:text-slate-950 transition-all pointer-events-auto active:scale-95"
+            >
+                <ArrowRight size={24} />
+            </button>
         </div>
 
         {/* HERO CONTENT LAYOUT */}
@@ -177,7 +231,8 @@ function RandomProductSlideshow({ products, onSelect, variant = 'card' }: { prod
             {displayProducts.map((_, i) => (
                 <div 
                     key={i} 
-                    className={`h-1.5 rounded-full transition-all duration-700 ${i === index ? 'bg-blue-500 w-16 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/10 w-4 hover:bg-white/20'}`} 
+                    onClick={(e) => { e.stopPropagation(); setIndex(i); }}
+                    className={`h-1.5 rounded-full transition-all duration-700 cursor-pointer ${i === index ? 'bg-blue-500 w-16 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/10 w-4 hover:bg-white/20'}`} 
                 />
             ))}
         </div>
@@ -465,6 +520,7 @@ function HomeContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('category', cat);
     params.delete('search');
+    params.delete('new');
     router.push(`/?${params.toString()}#products`);
     setCurrentPage(1);
   };
@@ -473,6 +529,7 @@ function HomeContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('category');
     params.set('search', brand.toLowerCase());
+    params.delete('new');
     router.push(`/?${params.toString()}#products`);
   };
 
@@ -480,12 +537,14 @@ function HomeContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('category');
     params.delete('search');
+    params.delete('new');
     router.push(`/?${params.toString()}#products`);
   };
 
   const handleClearSearch = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('search');
+    params.delete('new');
     router.push(`/?${params.toString()}#products`);
   };
 

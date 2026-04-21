@@ -3,6 +3,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+
 
 export default function RegisterPage() {
     // UI State
@@ -19,6 +21,8 @@ export default function RegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [otp, setOtp] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // --- STEP 1: Request Registration ---
     const handleRegister = async (e: React.FormEvent) => {
@@ -35,23 +39,14 @@ export default function RegisterPage() {
             return;
         }
 
-        // 2. Password Strength Validation
+        // 2. Password Match Validation
         if (password !== confirmPassword) {
             setPasswordError("Passwords do not match.");
             setLoading(false);
             return;
         }
 
-        const hasNumber = /\d/.test(password);
-        const hasUpper = /[A-Z]/.test(password);
-        const hasLower = /[a-z]/.test(password);
-        const isLongEnough = password.length >= 8;
-
-        if (!isLongEnough || !hasNumber || !hasUpper || !hasLower) {
-            setPasswordError("Password must be 8+ characters and contain uppercase, lowercase, and a digit.");
-            setLoading(false);
-            return;
-        }
+        // --- PASSWORD STRENGTH REMOVED AS PER USER REQUEST ---
 
         try {
             await axios.post('https://alnroy.pythonanywhere.com/api/auth/register/', {
@@ -100,7 +95,16 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 relative pt-20">
+            {/* Back to Dashboard Button */}
+            <Link 
+                href="/" 
+                className="absolute top-8 left-8 flex items-center gap-2 text-slate-600 hover:text-blue-600 font-bold transition-all bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100"
+            >
+                <ArrowLeft size={18} />
+                Back to Dashboard
+            </Link>
+
             <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-black text-slate-900">
@@ -150,25 +154,43 @@ export default function RegisterPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
-                            <input 
-                                suppressHydrationWarning
-                                type="password" 
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-                                required
-                            />
+                            <div className="relative">
+                                <input 
+                                    suppressHydrationWarning
+                                    type={showPassword ? "text" : "password"} 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition pr-12"
+                                    required
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Confirm Password</label>
-                            <input 
-                                suppressHydrationWarning
-                                type="password" 
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-                                required
-                            />
+                            <div className="relative">
+                                <input 
+                                    suppressHydrationWarning
+                                    type={showConfirmPassword ? "text" : "password"} 
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition pr-12"
+                                    required
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                         </div>
 
                         {passwordError && (

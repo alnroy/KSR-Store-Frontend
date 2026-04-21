@@ -229,8 +229,8 @@ export default function Footer() {
                             <a href="tel:9778796424" className="flex items-center gap-4 text-sm hover:text-white transition">
                                 <Phone className="text-blue-500" size={18} /> 9778796424
                             </a>
-                            <a href="mailto:ksraquaworld@gmail.com" className="flex items-center gap-4 text-sm hover:text-white transition underline decoration-blue-500/50">
-                                <Mail className="text-blue-500" size={18} /> ksraquaworld@gmail.com
+                            <a href="mailto:ksraquaworld1@gmail.com" className="flex items-center gap-4 text-sm hover:text-white transition underline decoration-blue-500/50">
+                                <Mail className="text-blue-500" size={18} /> ksraquaworld1@gmail.com
                             </a>
                         </div>
                     </div>

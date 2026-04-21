@@ -29,7 +29,7 @@ export default function ContactPage() {
                     </div>
                     <h3 className="font-black text-xl text-slate-900 mb-3">Email Us</h3>
                     <p className="text-slate-500 text-sm mb-6">For detailed order inquiries.</p>
-                    <a href="mailto:ksraquaworld@gmail.com" className="text-sm font-bold text-blue-600 underline">ksraquaworld@gmail.com</a>
+                    <a href="mailto:ksraquaworld1@gmail.com" className="text-sm font-bold text-blue-600 underline">ksraquaworld1@gmail.com</a>
                 </div>
 
                 {/* Location with Google Maps Link */}

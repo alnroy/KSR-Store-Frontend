@@ -1,9 +1,10 @@
 "use client"
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { AuthContext } from '@/context/AuthContext';
 
 
 export default function RegisterPage() {
@@ -13,6 +14,7 @@ export default function RegisterPage() {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const router = useRouter();
+    const { login } = useContext(AuthContext);
 
     // Form Data State
     const [username, setUsername] = useState('');
@@ -79,12 +81,11 @@ export default function RegisterPage() {
                 otp
             });
 
-            // Save the JWT tokens returned by our custom VerifyView
-            localStorage.setItem('access_token', res.data.access);
-            localStorage.setItem('refresh_token', res.data.refresh);
-
-            alert("Account verified and logged in successfully!");
-            router.push('/my-orders'); // Redirect to their secure portal
+            // --- CRITICAL FIX: Use the context function to update global login state ---
+            login(res.data.access, res.data.refresh);
+            
+            // alert("Account verified and logged in successfully!");
+            router.push('/'); // Redirect to Home for better experience
             
         } catch (err: any) {
             console.error(err);

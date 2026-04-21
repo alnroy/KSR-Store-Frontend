@@ -20,7 +20,12 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return !!localStorage.getItem('access_token');
+        }
+        return false;
+    });
     const [user, setUser] = useState<any | null>(null);
     const router = useRouter();
 
